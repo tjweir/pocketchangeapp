@@ -5,11 +5,24 @@
   <artifactId>PocketChange</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>PocketChange</name>
-  <inceptionYear>2007</inceptionYear>
+  <name>PocketChangeApp</name>
+  <inceptionYear>2008</inceptionYear>
+  <description>A Lift Application to support the Lift Book.</description>
   <properties>
     <scala.version>2.7.1</scala.version>
   </properties>
+  <developers>
+   <developer>
+      <id>dchenbecker</id>
+      <name>Derek Chen-Becker</name>
+      <timezone>0</timezone>
+    </developer>
+   <developer>
+      <id>tyler.weir</id>
+      <name>Tyler Weir</name>
+      <timezone>-5</timezone>
+    </developer>
+  </developers> 
 
   <repositories>
     <repository>
@@ -17,6 +30,34 @@
       <name>Scala-Tools Maven2 Repository</name>
       <url>http://scala-tools.org/repo-releases</url>
     </repository>
+    <!-- JFree -->
+    <repository>
+      <id>ibiblio</id>
+      <name>Ibiblio Maven2 Repository</name>
+      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
+    </repository>
+    <!--
+    <repository>
+      <id>JBoss</id>
+      <name>JBoss Maven2 Repository</name>
+      <url>http://repository.jboss.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>Maven1</id>
+      <name>Maven Repo1 Maven2 Repository</name>
+      <url>http://repo1.maven.org/maven2/</url>
+    </repository>
+    -->
+    <!-- for gnujaxp -->
+    <repository>
+      <id>Atlassian</id>
+      <name>Atlassian Maven2 Repository</name>
+      <url>http://repository.atlassian.com/maven2/</url>
+    </repository>
+
+
+
+
   </repositories>
 
   <pluginRepositories>
@@ -61,6 +102,16 @@
       <version>[6.1.6,)</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.0.11</version>
+    </dependency> 
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>8.3-603.jdbc4</version>
+    </dependency> 
     <!-- for LiftConsole -->
     <dependency>
       <groupId>org.scala-lang</groupId>
