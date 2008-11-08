@@ -27,19 +27,7 @@ class Boot {
 
 object MenuInfo {
   import Loc._
-
-  def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) ::
-  Menu(Loc("xml fun", List("xml_fun"), "XML Fun")) ::
-  Menu(Loc("chat", List("chat"), "Comet Chat")) ::
-  Menu(Loc("database", List("database"), "Database")) ::
-  Menu(Loc("ajax", List("ajax"), "AJAX Samples")) ::
-  Menu(Loc("ajax form", List("ajax-form"), "AJAX Form")) ::
-  Menu(Loc("json", List("json"), "JSON Messaging")) ::
-  Menu(Loc("template", List("template"), "Templates")) ::
-  Menu(Loc("ws", List("ws"), "Web Services")) ::
-  Menu(Loc("file_upload", List("file_upload"), "File Upload")) ::
-  // Menu(Loc("wiki", Link(List("wiki"), true, "/wiki/HomePage"), "Wiki")) ::
-  Nil
+  def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) :: Nil
 }
 
 

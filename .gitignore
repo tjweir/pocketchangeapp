@@ -25,6 +25,7 @@ tmp*
 temp*
 dist
 test-output
+PocketChange/lift_example
 
 # other scm
 .svn
