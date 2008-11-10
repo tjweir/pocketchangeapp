@@ -5,7 +5,7 @@
     <meta name="description" content="" />
     <meta name="keywords" content="" />
 	
-    <title>Lift Web Framework</title>
+    <title>PocketChange: where did my money go?</title>
     <lift:CSS.blueprint />
     <lift:CSS.fancyType />
     <script id="jquery" src="/classpath/jquery.js" type="text/javascript"/>
@@ -15,48 +15,32 @@
   </head>
   <body>
     <div class="container">
+    <div id="status-message"><strong>Note:</strong> PocketChange is totally awesome. I dare you to try it.  And then give us money.</div>
+    
       <div class="column span-24">
-        <div id="title">PocketChange</div>
+        <div id="title"><a href="/"><img src="images/pca-logo.png" /></a>
+        </div>
       </div>
 
-      <hr/>
-
-      <div class="column span-24">
-        Vertical: <lift:Menu.builder />	
+      <div class="column span-24" id="menu">
+        <lift:Menu.builder />	
       </div>
 
-
-      <hr/>
-
-      <div class="column span-1">&nbsp;</div>
-      <div class="column span-22">
-        Messages: <lift:snippet type="msgs"/>
+      <div class="column span-24">
+        <lift:snippet type="msgs">  
+          <lift:error_msg>Error!  The details are:</lift:error_msg>  
+          <lift:error_class>errorBox</lift:error_class>  
+          <lift:warning_msg>Whoops, I had a problem:</lift:warning_msg>  
+          <lift:warning_class>warningBox</lift:warning_class>  
+          <lift:notice_msg></lift:notice_msg>  
+          <lift:notice_class>noticeBox</lift:notice_class>  
+        </lift:snippet>  
         <br />
       </div>
-      <div class="column span-1 last">&nbsp;</div>
-
-      <hr/>
 
       <div class="column span-24">
-        <div id="entryform">Entry Form</div>
-      </div>
-
-      <hr/>
-
-      <div class="column span-2"></div>
-      <div class="column span-20">
-        <h2 class="alt">Table of Historic Expenses.</h2>
-      </div>
-      <div class="column span-2"></div>
-
-      <hr/>
-
-      <div class="column span-2"></div>
-      <div class="column span-20">
         <lift:bind name="content" />
-        <br />
       </div>
-      <div class="column span-2"></div>
 
       <hr />
 

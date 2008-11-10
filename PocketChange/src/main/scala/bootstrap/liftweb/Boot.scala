@@ -36,7 +36,7 @@ object DBVendor extends ConnectionManager {
   def newConnection(name: ConnectionIdentifier): Can[Connection] = {
     try {
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver")
-      val dm = DriverManager.getConnection("jdbc:derby:lift_example;create=true")
+      val dm = DriverManager.getConnection("jdbc:derby:pca_example;create=true")
       Full(dm)
     } catch {
       case e : Exception => e.printStackTrace; Empty

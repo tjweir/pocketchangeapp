@@ -1,17 +1,68 @@
+.container {
+  margin-top: 0px;
+}
+
 #title {
 color: white;
 background: #D80000; 
-border: 1px solid #A80000;
+border-top: 3px solid #A80000;
 padding: 10px;
 margin-bottom: 15px;
 font-size: 2.5em;
 }
 
+#title a {
+  color: white;
+  text-decoration: none;
+}
+
 #entryform { 
 color: white;
 background: #60a8c0;
-border: 1px solid #2E7D9C;
+border-top: 3px solid #2E7D9C;
 padding: 10px;
 margin-bottom: 15px;
 
 }
+
+#menu {
+background:#FFFFDD none repeat scroll 0 0;
+color:#D66000;
+border-top: 3px solid #D66000;
+margin-bottom: 15px;
+}
+
+
+/* Messages */
+ .noticeBox, .successBox, .warningBox, .errorBox, .validationBox {  
+     border: 1px solid;  
+     padding:5px 15px 5px 15px;  
+     background-repeat: no-repeat;  
+ }  
+ .noticeBox {  
+     color: #00529B;  
+    background-color: #BDE5F8;  
+ }  
+ .success {  
+     color: #4F8A10;  
+     background-color: #DFF2BF;  
+ }  
+ .warningBox {  
+     color: #9F6000;  
+     background-color: #FEEFB3;  
+ }  
+ .errorBox {  
+     color: #D8000C;  
+     background-color: #FFBABA;  
+ }  
+
+/* Top Status bar */
+#status-message {
+background:#FFFFDD none repeat scroll 0 0;
+color:#D66000;
+border-top: 3px solid #D66000;
+padding:5px 0;
+text-align:center;
+margin-bottom: 15px;
+}
+
