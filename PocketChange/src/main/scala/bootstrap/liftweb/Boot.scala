@@ -8,6 +8,8 @@ import Helpers._
 import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
+import net.lag.configgy.Configgy
+import net.lag.logging.Logger
  
 /**
   * A class that's instantiated early and run.  It allows the application
@@ -19,6 +21,11 @@ class Boot {
     // where to search snippet
     LiftRules.addToPackages("com.pocketchangeapp")     
     Schemifier.schemify(true, Log.infoF _, User)
+
+    Configgy.configure("pca.conf")
+    val log = Logger.get
+    log.info("Configgy up")
+    log.info("Bootstrap up")
 
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
