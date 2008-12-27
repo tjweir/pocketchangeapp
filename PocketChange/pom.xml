@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.pocketchangeapp</groupId>
   <artifactId>PocketChange</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1</version>
   <packaging>war</packaging>
   <name>PocketChangeApp</name>
   <inceptionYear>2008</inceptionYear>
@@ -93,6 +93,22 @@
       <artifactId>lift-core</artifactId>
       <version>0.10-SNAPSHOT</version>
     </dependency>
+      <dependency>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-util</artifactId>
+      <version>0.10-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-webkit</artifactId>
+      <version>0.10-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-mapper</artifactId>
+      <version>0.10-SNAPSHOT</version>
+    </dependency> 
+  
     <dependency>
       <groupId>net.lag</groupId>
       <artifactId>configgy</artifactId>
@@ -131,7 +147,7 @@
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>8.3-603.jdbc4</version>
+      <version>8.1-404.jdbc3</version>
     </dependency> 
     <!-- for LiftConsole -->
     <dependency>

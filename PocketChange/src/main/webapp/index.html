@@ -1,17 +1,59 @@
 <lift:surround with="default" at="content">
+<head>
+  <!-- required plugins -->
+  <script type="text/javascript" src="/scripts/date.js"></script>
+  <!--[if IE]><script type="text/javascript" src="/scripts/jquery.bgiframe.js"></script><![endif]-->
+
+  <!-- jquery.datePicker.js -->
+  <script type="text/javascript" src="/scripts/jquery.datePicker.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="/style/datePicker.css" />
+  
+  <style>
+  a.dp-choose-date {
+	  float: left;
+	  width: 16px;
+	  height: 16px;
+	  padding: 0;
+	  margin: 5px 3px 0;
+	  display: block;
+	  text-indent: -2000px;
+	  overflow: hidden;
+	  background: url(/scripts/calendar.png) no-repeat; 
+  }
+  a.dp-choose-date.dp-disabled {
+    background-position: 0 -20px;
+	  cursor: default;
+  }
+  input.dp-applied {
+	  width: 140px;
+	  float: left;
+  }
+  </style>
+</head>
+
       <div class="column span-24">
-        
+        <lift:AddEntry.addentry form="POST">
         <div id="entryform">
-          <h3>Entry Form</h3>
-          <lift:Entry.addForm form="POST" />
+          <div class="column span-24"><h3>Entry Form</h3>
+            <e:dateOf /> <e:desc /> <e:value /> <e:tags/><button>Add $</button>
+          </div>
         </div>
+        </lift:AddEntry.addentry>
       </div>
 
       <hr/>
 
       <div class="column span-24">
         <h3 >Table of Historic Expenses.</h3>
-        <lift:Entry.testList />
+        <lift:HomePage.testList />
       </div>
+
+    <script type="text/javascript">
+      Date.format = 'yyyy/mm/dd';
+      jQuery(function () {
+        jQuery('#entrydate').datePicker({startDate:'00010101'});
+      })
+    </script>
 </lift:surround>
 

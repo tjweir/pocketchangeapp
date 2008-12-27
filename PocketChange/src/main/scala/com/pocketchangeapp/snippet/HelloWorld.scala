@@ -6,12 +6,19 @@ import S._
 import SHtml._
 import scala.xml._
 
+import com.pocketchangeapp.model._
+
+import java.math.BigDecimal
+import java.util.Date
+
 import net.lag.logging.Logger
 
-class Entry {
+class HomePage {
   val log = Logger.get
 
   def howdy = <span>Welcome to PocketChange at {new java.util.Date}</span>
+
+  val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
   def addForm = {
     log.info("addForm rendered")
@@ -22,53 +29,31 @@ class Entry {
     {submit("Submit", () => S.notice("Submitted"))}</div>
   }
 
+  def addAnEntry: NodeSeq = {
+    val e = (new Entry).dateOf(new java.util.Date).description("Food").amount(new BigDecimal("12.43"))
+    e.save
+
+    <h1>Adding an entry</h1>
+  }
+
   def testList: NodeSeq = {
+    val entries = Entry.findAll
     <table id="" class="" border="0" cellpadding="0" cellspacing="1" width="100%">
       <thead>
-	<tr>
-	  <th>Date</th>
-	  <th>Description</th>
-	  <th>Tags</th>
-	  <th>Value</th>
-	</tr>
+	      <tr>
+	        <th>Date</th><th>Description</th><th>Tags</th><th>Value</th>
+	      </tr>
       </thead>
       <tbody>
-	<tr>
-			  
-	  <td>Jan 18, 2001 9:12 AM</td>
-	  <td>Foo</td>
-	  <td>Food, Impulse</td>
-	  <td>$9.99</td>
-	</tr>
-	<tr>
-	  <td>Jan 18, 2001 9:12 AM</td>
-	  <td>Foo</td>
-	  <td>Food, Impulse</td>
-	  <td>$9.99</td>
-	</tr>
-	<tr>
-	  <td>Jan 18, 2001 9:12 AM</td>
-	  <td>Foo</td>
-	  <td>Food, Impulse</td>
-	  <td>$9.99</td>
-	</tr>
-	<tr>
-	  <td>Jan 18, 2001 9:12 AM</td>
-	  <td>Foo</td>
-	  <td>Food, Impulse</td>
-	  <td>$9.99</td>
-	</tr>
-
+      { entries.map(x => <tr>
+        <td>{formatter.format(x.dateOf.is)}</td>
+        <td>{x.description.is.toString}</td>
+        <td>{x.showTags}</td>
+        <td>{x.amount.is.toString}</td>
+        </tr>
+        )}
       </tbody>
     </table>
   }
-
-  /*
-  def testSwappable: NodeSeq = {
-     swappable(<span>Click to edit: <span id='the_text'></span></span>,                                                          
-     ajaxText("", 
-       v => DisplayMessage("messages", Text("You entered some text: "+v), 4 seconds, 1 second) & SetHtml("the_text", Text(v))))
-  }
-  */
 }
 

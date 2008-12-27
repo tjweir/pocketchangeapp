@@ -11,22 +11,18 @@ import com.pocketchangeapp.model._
 import net.lag.configgy.Configgy
 import net.lag.logging.Logger
  
-/**
-  * A class that's instantiated early and run.  It allows the application
-  * to modify lift's environment
-  */
+/* Connect Lucene/Compass for search */
 class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
-    // where to search snippet
     LiftRules.addToPackages("com.pocketchangeapp")     
-    Schemifier.schemify(true, Log.infoF _, User)
+    Schemifier.schemify(true, Log.infoF _, User, Entry, Tag, PCATag)
 
     Configgy.configure("pca.conf")
     val log = Logger.get
+    /* Useful? */
     log.info("Configgy up")
     log.info("Bootstrap up")
-
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
   }
@@ -37,13 +33,11 @@ object MenuInfo {
   def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) :: Nil
 }
 
-
-
 object DBVendor extends ConnectionManager {
   def newConnection(name: ConnectionIdentifier): Can[Connection] = {
     try {
-      Class.forName("org.apache.derby.jdbc.EmbeddedDriver")
-      val dm = DriverManager.getConnection("jdbc:derby:pca_example;create=true")
+      Class.forName("org.postgresql.Driver")
+      val dm = DriverManager.getConnection("jdbc:postgresql://localhost/pca", "pca", "pca")
       Full(dm)
     } catch {
       case e : Exception => e.printStackTrace; Empty

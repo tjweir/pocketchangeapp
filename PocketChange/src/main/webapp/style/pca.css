@@ -18,10 +18,12 @@ font-size: 2.5em;
 
 #entryform { 
 color: white;
-background: #60a8c0;
-border-top: 3px solid #2E7D9C;
-padding: 10px;
-margin-bottom: 15px;
+  background: #60a8c0;
+  border-top: 3px solid #2E7D9C;
+  padding: 10px;
+  margin-bottom: 15px;
+  height: 80px;
+  text-size: 160%;
 
 }
 
@@ -55,6 +57,13 @@ margin-bottom: 15px;
      color: #D8000C;  
      background-color: #FFBABA;  
  }  
+
+#centered {
+  /* border: 1px solid red; */
+  left: 20%;
+  margin-left: 10%;
+  width: 80%;
+}
 
 /* Top Status bar */
 #status-message {
