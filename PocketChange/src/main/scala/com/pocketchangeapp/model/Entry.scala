@@ -12,6 +12,8 @@ import util._
 import Helpers._
 import http._
 
+import scala.xml.{Text, NodeSeq}
+
 
 object Entry extends Entry with KeyedMetaMapper[Long,Entry] {
   override def dbTableName = "entries" // define the DB table name
@@ -50,8 +52,8 @@ class Entry extends KeyedMapper[Long, Entry] {
     tags(tgs.roboSplit(",").map(Tag.tagFromName))
   }
 
-  def showTags: String = {
-    tags.flatMap(i => Tag.fromId(i).map[String](t => t.tag)).reduceLeft(_ + ", " + _)
+  def showTags: NodeSeq = {
+    tags.flatMap(i => Tag.fromId(i).map[NodeSeq](t => <div class="tag">{t.tag}</div>)).reduceLeft(_ ++ Text(" ") ++ _)
   } 
 
   def tags = synchronized {

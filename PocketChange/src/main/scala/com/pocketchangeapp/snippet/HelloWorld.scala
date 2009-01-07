@@ -49,7 +49,7 @@ class HomePage {
         <td>{formatter.format(x.dateOf.is)}</td>
         <td>{x.description.is.toString}</td>
         <td>{x.showTags}</td>
-        <td>{x.amount.is.toString}</td>
+        <td>${x.amount.is.toString}</td>
         </tr>
         )}
       </tbody>

@@ -75,3 +75,11 @@ text-align:center;
 margin-bottom: 15px;
 }
 
+
+.tag {
+  border: 1px #9F6000 solid;
+  background: #FEEFB3;
+  font-weight: bold;
+  padding: 2px;
+  display: inline;
+}
