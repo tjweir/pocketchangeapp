@@ -34,7 +34,7 @@ object MenuInfo {
 }
 
 object DBVendor extends ConnectionManager {
-  def newConnection(name: ConnectionIdentifier): Can[Connection] = {
+  def newConnection(name: ConnectionIdentifier): Box[Connection] = {
     try {
       Class.forName("org.postgresql.Driver")
       val dm = DriverManager.getConnection("jdbc:postgresql://localhost/pca", "pca", "pca")

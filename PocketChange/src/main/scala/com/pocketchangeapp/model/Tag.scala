@@ -33,9 +33,9 @@ object Tag extends Tag with LongKeyedMetaMapper[Tag] {
     _tagsById
   }
   
-  def fromId(id: Int): Can[Tag] = tagsById.get(id)
+  def fromId(id: Int): Box[Tag] = tagsById.get(id)
   
-  def idFrom(tag: String): Can[Int] = 
+  def idFrom(tag: String): Box[Int] = 
   tags.get(tag.toLowerCase.trim).map(_.id.is.toInt)
   
   def tagFromName(tag: String) = synchronized {
