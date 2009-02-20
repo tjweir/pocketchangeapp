@@ -16,7 +16,17 @@ class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
     LiftRules.addToPackages("com.pocketchangeapp")     
-    Schemifier.schemify(true, Log.infoF _, User, Entry, Tag, PCATag)
+    Schemifier.schemify(true, Log.infoF _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Transaction, TransactionTag)
+
+    LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
+
+    // Set up some rewrites
+    LiftRules.rewrite.append {
+      case RewriteRequest(ParsePath("viewAcct" :: acctName :: Nil, _, _, _), _, _) =>
+	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName))
+      case RewriteRequest(ParsePath("viewAcct" :: acctName :: tag :: Nil, _, _, _), _, _) =>
+	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName, "tag" -> tag))
+    }
 
     Configgy.configure("pca.conf")
     val log = Logger.get
@@ -24,13 +34,17 @@ class Boot {
     log.info("Configgy up")
     log.info("Bootstrap up")
 
-    LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
   }
 }
 
 object MenuInfo {
   import Loc._
-  def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) :: Nil
+  val IfLoggedIn = If(() => User.currentUser.isDefined, "You must be logged in")
+  def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) :: 
+    Menu(Loc("manageAccts", List("manage"), "Manage Accounts", IfLoggedIn)) :: 
+    Menu(Loc("addAcct", List("editAcct"), "Add Account", Hidden, IfLoggedIn)) ::
+    Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)) ::
+    User.sitemap
 }
 
 object DBVendor extends ConnectionManager {

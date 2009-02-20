@@ -108,7 +108,11 @@
       <artifactId>lift-mapper</artifactId>
       <version>0.11-SNAPSHOT</version>
     </dependency> 
-  
+    <dependency>
+      <groupId>jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.0.9</version>
+    </dependency>   
     <dependency>
       <groupId>net.lag</groupId>
       <artifactId>configgy</artifactId>
@@ -175,6 +179,11 @@
         </executions>
         <configuration>
           <scalaVersion>${scala.version}</scalaVersion>
+	  <args>
+            <!-- arg>-unchecked</arg -->
+            <arg>-deprecation</arg>
+            <arg>-Xno-varargs-conversion</arg>
+          </args>
         </configuration>
       </plugin>
       <plugin>

@@ -6,57 +6,26 @@ import util._
 import Helpers._
 
 object Tag extends Tag with LongKeyedMetaMapper[Tag] {
-  private def saved(tag: Tag) {
-    synchronized {
-      _tagsById = tagsById + (tag.id.is -> tag)
-      _tags = tags + (tag.tag.toLowerCase -> tag)
+  override def dbTableName = "tags"
+
+  def byName (accountId : Long, name : String) = 
+    findAll(By(Tag.account, accountId), By(Tag.tag, name)) match {
+      case tag :: rest => tag
+      // create a tag for the given name if it doesn't exist...
+      case Nil => Tag.create.tag(name).account(accountId).saveMe
     }
-  }
-  
-  private lazy val allTags = findAll
-  
-  private var _tags: Map[String, Tag] = _
-  
-  private var _tagsById: Map[Long, Tag] = _
-  
-  private def tags = synchronized {
-    if (_tags eq null) {
-      _tags = Map.empty ++ allTags.map(t => (t.tag.toLowerCase -> t))
-    }
-    _tags
-  }
-  
-  private def tagsById = synchronized {
-    if (_tagsById eq null) {
-      _tagsById = Map.empty ++ allTags.map(t => (t.id.is -> t))
-    }
-    _tagsById
-  }
-  
-  def fromId(id: Int): Box[Tag] = tagsById.get(id)
-  
-  def idFrom(tag: String): Box[Int] = 
-  tags.get(tag.toLowerCase.trim).map(_.id.is.toInt)
-  
-  def tagFromName(tag: String) = synchronized {
-    val ttag = tag.trim
-    tags.get(ttag.toLowerCase) match {
-      case Some(tag) => tag
-      case _ => Tag.create.tag(ttag).saveMe
-    }
-  }
-  
-  override def afterSave: List[Tag => Any] = saved _ :: super.afterSave
 }
 
-class Tag extends LongKeyedMapper[Tag] {
+class Tag extends LongKeyedMapper[Tag] with IdPK {
   def getSingleton = Tag
-  def primaryKeyField = id
-  
-  object id extends MappedLongIndex(this)
   
   object tag extends MappedPoliteString(this, 64) {
     override def setFilter = notNull _ :: trim _ :: super.setFilter 
+  }
+
+  // Each tag belongs to a specific account.
+  object account extends MappedLongForeignKey(this, Account) {
+    override def dbIndexed_? = true
   }
 }
 

@@ -1,0 +1,46 @@
+<lift:surround with="default" at="content">
+ 
+<div class="column span-24">
+  <h2>Summary</h2>
+  <lift:Accounts.summary>
+    <table>
+      <tr>
+	<th>Name</th>
+	<th>Balance</th>
+      </tr>
+      <tr>
+	<td><acct:name /></td>
+	<td><acct:balance /></td>
+      </tr>
+    </table>
+    <p><span style="font-weight: bold;">Tags:</span> <acct:tags /></p>
+  </lift:Accounts.summary>
+</div>
+
+<hr/>
+
+<div class="column span-24">
+  <h2>Transactions</h2>
+  <lift:Accounts.transactionList>
+    <table id="" class="" border="0" cellpadding="0" cellspacing="1" width="100%">
+      <thead>
+	<tr>
+	  <th>Date</th><th>Description</th><th>Tags</th><th>Value</th>
+	</tr>
+      </thead>
+      <tbody>
+	<acct:entry>
+	  <tr>
+	    <td><entry:date /></td>
+            <td><entry:desc /></td>
+            <td><entry:tags /></td>
+            <td><entry:amt /></td>
+	  </tr>
+	</acct:entry>
+      </tbody>
+    </table>
+  </lift:Accounts.transactionList>
+  <!-- TODO: needs pagination -->
+</div>
+
+</lift:surround>
