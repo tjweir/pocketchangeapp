@@ -83,10 +83,9 @@ class MappedDecimal[T <: Mapper[T]] (val fieldOwner : T, val context : MathConte
   private var data : BigDecimal = defaultValue
   private var orgData : BigDecimal = defaultValue
 
-  override def set (in : BigDecimal) = {
+  private def st (in : BigDecimal) = {
     data = in
     orgData = in
-    in
   }
 
   protected def i_is_! = data
@@ -137,16 +136,16 @@ class MappedDecimal[T <: Mapper[T]] (val fieldOwner : T, val context : MathConte
   def buildSetBooleanValue(accessor : Method, columnName : String) : (T, Boolean, Boolean) => Unit = null  
 
   def buildSetDateValue(accessor : Method, columnName : String) : (T, Date) => Unit =  
-    (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.set(if (v == null) defaultValue else (BigDecimal(v.getTime).setScale(scale)))})  
+    (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.st(if (v == null) defaultValue else (BigDecimal(v.getTime).setScale(scale)))})  
   
   def buildSetStringValue(accessor: Method, columnName: String): (T, String) =>  
-    Unit = (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.set(BigDecimal(v).setScale(scale))})  
+    Unit = (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.st(BigDecimal(v).setScale(scale))})  
   
   def buildSetLongValue(accessor: Method, columnName : String) : (T, Long, Boolean) =>  
-    Unit = (inst, v, isNull) => doField(inst, accessor, {case f: MappedDecimal[T] => f.set(if (isNull) defaultValue else (BigDecimal(v).setScale(scale)))})  
+    Unit = (inst, v, isNull) => doField(inst, accessor, {case f: MappedDecimal[T] => f.st(if (isNull) defaultValue else (BigDecimal(v).setScale(scale)))})  
   
   def buildSetActualValue(accessor: Method, data: AnyRef, columnName: String) : (T, AnyRef) =>  
-    Unit = (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.set(BigDecimal(v.toString).setScale(scale))})  
+    Unit = (inst, v) => doField(inst, accessor, {case f: MappedDecimal[T] => f.st(BigDecimal(v.toString).setScale(scale))})  
   
   /**
    * Returns the SQL creation string for this field. See the note at the
