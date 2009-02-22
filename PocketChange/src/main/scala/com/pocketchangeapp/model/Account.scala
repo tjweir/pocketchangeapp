@@ -7,6 +7,7 @@ package com.pocketchangeapp.model
 import java.math.MathContext
 
 import net.liftweb.mapper._
+import net.liftweb.util.Empty
 
 class Account extends LongKeyedMapper[Account] with IdPK {
   def getSingleton = Account
@@ -28,8 +29,7 @@ class Account extends LongKeyedMapper[Account] with IdPK {
   // The balance has up to 16 digits and 2 decimal places
   object balance extends MappedDecimal(this, MathContext.DECIMAL64, 2)
 
-  def transactions = Transaction.findAll(By(Transaction.account, this.id), 
-					 OrderBy(Transaction.serialNumber, Descending))
+  def transactions = Transaction.getByAcct(this, Empty, Empty, Empty)
 
   def tags = Tag.findAll(By(Tag.account, this.id))
 

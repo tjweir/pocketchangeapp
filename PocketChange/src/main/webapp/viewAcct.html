@@ -1,8 +1,8 @@
 <lift:surround with="default" at="content">
- 
+
+  <lift:Accounts.detail eager_eval="true"> 
 <div class="column span-24">
   <h2>Summary</h2>
-  <lift:Accounts.summary>
     <table>
       <tr>
 	<th>Name</th>
@@ -19,36 +19,31 @@
     </div>
 
     <div>
-    <span style="font-weight: bold;">Graphs:</span> <acct:graphs />
+      <h3>Filters:</h3>
+      <table>
+	<tr>
+	  <th>Start Date</th>
+	  <td><acct:startDate /></td>
+	  <th>End Date</th>
+	  <td><acct:endDate /></td>
+	</tr>
+      </table>
     </div>
-  </lift:Accounts.summary>
+
+    <div id="tx_graph">
+      <acct:graph />
+    </div>
 </div>
 
 <hr/>
 
-<div class="column span-24">
+<div class="column span-24" >
   <h2>Transactions</h2>
-  <lift:Accounts.transactionList>
-    <table id="" class="" border="0" cellpadding="0" cellspacing="1" width="100%">
-      <thead>
-	<tr>
-	  <th>Date</th><th>Description</th><th>Tags</th><th>Value</th><th>Balance</th>
-	</tr>
-      </thead>
-      <tbody>
-	<acct:entry>
-	  <tr>
-	    <td><entry:date /></td>
-            <td><entry:desc /></td>
-            <td><entry:tags /></td>
-            <td><entry:amt /></td>
-	    <td><entry:balance /></td>
-	  </tr>
-	</acct:entry>
-      </tbody>
-    </table>
-  </lift:Accounts.transactionList>
+  <div id="tx_table">
+    <lift:embed what="tx_table" />
+  </div>
   <!-- TODO: needs pagination -->
 </div>
+  </lift:Accounts.detail>
 
 </lift:surround>

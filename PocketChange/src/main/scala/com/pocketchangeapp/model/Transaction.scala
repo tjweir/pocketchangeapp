@@ -11,6 +11,7 @@ import _root_.net.liftweb.mapper._
 import _root_.scala.xml.Text
 
 import _root_.net.liftweb.util.Helpers._
+import _root_.net.liftweb.util.{Box,Empty,Full}
 
 import com.pocketchangeapp.util.Util
 
@@ -75,18 +76,32 @@ object Transaction extends Transaction with LongKeyedMetaMapper[Transaction] {
       tx._tags.foreach(TransactionTag.create.transaction(tx).tag(_).save)
     }
   }
+
+  def getByAcct (account : Account, startDate : Box[Date], endDate : Box[Date], order : Box[OrderBy[Transaction,_]], params : QueryParam[Transaction]*) : List[Transaction] = {
+    // Set up some query parameters
+    val dateClause : QueryParam[Transaction] = (startDate,endDate) match {
+      case (Full(start), Full(end)) => BySql("transactions.dateOf between ? and ?",
+					     IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+					     start, end)
+      case (Full(start), Empty) => BySql("transactions.dateOf >= ?",
+					 IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+					 start)
+      case (Empty, Full(end)) => BySql("transactions.dateOf <= ?",
+				       IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+				       end)
+      case _ => new Ignore[Transaction]
+    }
+    
+    val txOrder : QueryParam[Transaction] = order openOr OrderBy(Transaction.serialNumber, Descending)
+      
+    Transaction.findAll((By(Transaction.account, account.id) :: dateClause :: txOrder :: params.toList).toSeq : _*)
+  }
+
   
   // returns the serial and balance of the last entry before this one
-  def getLastEntryData (date : Date) : (Long,BigDecimal) = {
+  def getLastEntryData (acct : Account, date : Date) : (Long,BigDecimal) = {
     // Find the last transaction on or before the given date
-    val results = Transaction.findAll(
-      BySql(String.format("%s.%s <= '%s'",
-			  Transaction.dbTableName,
-			  Transaction.dateOf.dbColumnName,
-			  Util.noSlashDate.format(date)),
-	    IHaveValidatedThisSQL("dchenbecker", "2009-02-21")),
-      OrderBy(Transaction.dateOf, Descending),
-      MaxRows(1))
+    val results = getByAcct(acct, Empty, Full(date), Empty, MaxRows(1))
 
     results match {
       case entry :: Nil => (entry.serialNumber.is, entry.currentBalance.is)

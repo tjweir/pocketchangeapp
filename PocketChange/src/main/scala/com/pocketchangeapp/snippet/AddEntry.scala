@@ -42,6 +42,8 @@ class AddEntry extends StatefulSnippet {
 
 	  // We need to determine the last serial number and balance for the date in question
 	  val (txSerial,txBalance) = Transaction.getLastEntryData(txDate)
+
+	  println("Last entry = " + (txSerial, txBalance))
 	  
 	  val e = Transaction.create.account(account).dateOf(txDate).serialNumber(txSerial + 1)
 	           .description(desc).amount(BigDecimal(value)).tags(tags)

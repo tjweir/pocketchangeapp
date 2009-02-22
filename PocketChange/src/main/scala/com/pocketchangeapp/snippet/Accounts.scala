@@ -1,5 +1,7 @@
 package com.pocketchangeapp.snippet
 
+import java.util.Date
+
 import scala.xml._
 import net.liftweb._
 import http._
@@ -10,6 +12,7 @@ import scala.xml._
 import Helpers._
 
 import com.pocketchangeapp.model._
+import com.pocketchangeapp.util.Util
 
 class Accounts {
 
@@ -64,21 +67,30 @@ class Accounts {
 	 "save" -> submit("Save", doSave))
   }
 
-  def summary (xhtml: NodeSeq) : NodeSeq = S.param("name") match {
+  def detail (xhtml: NodeSeq) : NodeSeq = S.param("name") match {
     case Full(acctName) => {
       Account.findByName(User.currentUser.open_!, acctName) match {
 	case acct :: Nil => {
-	  // Set this so that the transactionList page can see it.
-	  currentAccountVar(acct)
 	  val tags = <a href={"/viewAcct/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
 	         acct.tags.flatMap({tag => <a href={"/viewAcct/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
 
-	  val graphs = Text("")
+	  // Some state for the Ajax calls
+	  var startDate : Box[Date] = Empty
+	  var endDate : Box[Date] = Empty
+
+	  val tableEntries = (S.param("tag") match {
+	    case Full(tag) => acct.transactions.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
+	    case _ => acct.transactions
+	  })
+
 	  bind("acct", xhtml, 
 	       "name" -> acct.name.asHtml,
 	       "balance" -> acct.balance.asHtml,
 	       "tags" -> tags,
-	       "graphs" -> graphs)
+	       "startDate" -> Text(""),
+	       "endDate" -> Text(""),
+	       "graph" -> <img src={"/graph/" + acctName + "/history"} />,
+	       "table" -> buildTxTable(tableEntries, xhtml))
 	}
 	case _ => Text("Could not locate account " + acctName)
       }
@@ -86,21 +98,14 @@ class Accounts {
     case _ => Text("No account name provided")
   }
 
-  val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
-
-  def transactionList (xhtml: NodeSeq) : NodeSeq = {
-    val entries : NodeSeq = (S.param("tag") match {
-      case Full(tag) => currentAccount.transactions.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
-      case _ => currentAccount.transactions
-    }).flatMap({ entry =>
-      bind("entry", chooseTemplate("acct", "entry", xhtml),
-	   "date" -> Text(formatter.format(entry.dateOf.is)),
+  def buildTxTable(entries : List[Transaction], template : NodeSeq) = {
+    entries.flatMap({ entry =>
+      bind("entry", chooseTemplate("acct", "tableEntry", template),
+	   "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
 	   "desc" -> Text(entry.description.is),
 	   "tags" -> Text(entry.tags.map(_.tag.is).mkString(", ")),
 	   "amt" -> Text(entry.amount.toString),
 	   "balance" -> Text(entry.currentBalance.toString))
-	     })
-
-    bind("acct", xhtml, "entry" -> entries)
+		    })
   }
 }

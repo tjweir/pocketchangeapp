@@ -1,5 +1,6 @@
 package com.pocketchangeapp.util
 
+import java.util.Date
 import java.text.SimpleDateFormat
 
 import scala.xml._
@@ -31,4 +32,11 @@ object Util {
       case e => default // Should log something in this case
     } 
   }
+
+  def getDateParam(name : String, converter : (String) => Date) : Box[Date] =
+    try {
+      S.param(name).map(converter(_))
+    } catch {
+      case e => Empty
+    }  
 }
