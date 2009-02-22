@@ -1,4 +1,6 @@
-package com.pocketchangeapp.snippet
+package com.pocketchangeapp.util
+
+import java.text.SimpleDateFormat
 
 import scala.xml._
 import net.liftweb._
@@ -11,9 +13,22 @@ import Helpers._
 
 import com.pocketchangeapp.model._
 
-class Util {
+object Util {
+  val noSlashDate = new SimpleDateFormat("yyyyMMdd")
+
+  val slashDate = new SimpleDateFormat("yyyy/MM/dd")
+
   def splitEvery[A](as : List[A], n : Int) : List[List[A]] = as.splitAt(n) match {
     case (a, Nil) => a :: Nil
     case (a, b)   => a :: splitEvery(b, n)
+  }
+
+  def getIntParam(name : String, default : Int) : Int = {
+    try { 
+      S.param(name).map(_.toInt) openOr default
+    }
+    catch { 
+      case e => default // Should log something in this case
+    } 
   }
 }

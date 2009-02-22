@@ -10,6 +10,7 @@ import scala.xml._
 import Helpers._
 
 import com.pocketchangeapp.model._
+import com.pocketchangeapp.util.Util
 
 import java.util.Date
 
@@ -20,8 +21,6 @@ class AddEntry extends StatefulSnippet {
   def dispatch = {
     case "addentry" => add _
   }
-
-  val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
   var account : Long = _
   var date = ""
@@ -37,18 +36,24 @@ class AddEntry extends StatefulSnippet {
 	if (tags.trim.length == 0) error("We're going to need at least one tag.")
 	else {
           /* Get the date correctly, add the datepicker: comes in as yyyy/mm/dd */
-	  val e = Transaction.create.account(account).dateOf(formatter.parse(date)).summary(desc).amount(BigDecimal(value)).tags(tags)
+	  val txDate = Util.slashDate.parse(date)
+
+	  val amount = BigDecimal(value)
+
+	  // We need to determine the last serial number and balance for the date in question
+	  val (txSerial,txBalance) = Transaction.getLastEntryData(txDate)
+	  
+	  val e = Transaction.create.account(account).dateOf(txDate).serialNumber(txSerial + 1)
+	           .description(desc).amount(BigDecimal(value)).tags(tags)
+		   .currentBalance(txBalance + amount)
+
 	  e.validate match {
             case Nil => {
+	      Transaction.updateEntries(txSerial + 1, amount)
               e.save
   	      val acct = Account.find(account).open_!
-	      Logger.get.info("Current balance = " + acct.balance.is)
 	      val newBalance = acct.balance.is + e.amount.is
-	      Logger.get.info("New balance = " + newBalance)
-	      acct.balance(newBalance)
-	      Logger.get.info("is = " + acct.balance.is + ", was = " + acct.balance.was)
-	      val saved = acct.save
-	      Logger.get.info("Saved = " + saved)
+	      acct.balance(newBalance).save
               notice("Entry added!")
 	      unregisterThisSnippet() // dpp: remove the statefullness of this snippet
 	    }
@@ -59,7 +64,7 @@ class AddEntry extends StatefulSnippet {
 
       bind("e", in, 
 	   "account" -> select(user.editable.map(acct => (acct.id.toString, acct.name)), Empty, id => account = id.toLong),
-	   "dateOf" -> text(formatter.format(new Date()).toString, date = _) % ("id" -> "entrydate"),
+	   "dateOf" -> text(Util.slashDate.format(new Date()).toString, date = _) % ("id" -> "entrydate"),
 	   "desc" -> text("Item Description", desc = _),
 	   "value" -> text("Value", value = _),
 	   "tags" -> text(tags, doTagsAndSubmit))

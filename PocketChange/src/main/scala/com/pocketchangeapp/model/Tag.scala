@@ -11,7 +11,7 @@ object Tag extends Tag with LongKeyedMetaMapper[Tag] {
   def byName (accountId : Long, name : String) = 
     findAll(By(Tag.account, accountId), By(Tag.tag, name)) match {
       case tag :: rest => tag
-      // create a tag for the given name if it doesn't exist...
+      // create a tag for the given name if it doesn't exist... 
       case Nil => Tag.create.tag(name).account(accountId).saveMe
     }
 }

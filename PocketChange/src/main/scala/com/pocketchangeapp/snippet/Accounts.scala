@@ -72,10 +72,13 @@ class Accounts {
 	  currentAccountVar(acct)
 	  val tags = <a href={"/viewAcct/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
 	         acct.tags.flatMap({tag => <a href={"/viewAcct/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
+
+	  val graphs = Text("")
 	  bind("acct", xhtml, 
 	       "name" -> acct.name.asHtml,
 	       "balance" -> acct.balance.asHtml,
-	       "tags" -> tags)
+	       "tags" -> tags,
+	       "graphs" -> graphs)
 	}
 	case _ => Text("Could not locate account " + acctName)
       }
@@ -92,9 +95,10 @@ class Accounts {
     }).flatMap({ entry =>
       bind("entry", chooseTemplate("acct", "entry", xhtml),
 	   "date" -> Text(formatter.format(entry.dateOf.is)),
-	   "desc" -> Text(entry.summary.is),
+	   "desc" -> Text(entry.description.is),
 	   "tags" -> Text(entry.tags.map(_.tag.is).mkString(", ")),
-	   "amt" -> Text(entry.amount.toString))
+	   "amt" -> Text(entry.amount.toString),
+	   "balance" -> Text(entry.currentBalance.toString))
 	     })
 
     bind("acct", xhtml, "entry" -> entries)

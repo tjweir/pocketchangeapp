@@ -28,7 +28,8 @@ class Account extends LongKeyedMapper[Account] with IdPK {
   // The balance has up to 16 digits and 2 decimal places
   object balance extends MappedDecimal(this, MathContext.DECIMAL64, 2)
 
-  def transactions = Transaction.findAll(By(Transaction.account, this.id))
+  def transactions = Transaction.findAll(By(Transaction.account, this.id), 
+					 OrderBy(Transaction.serialNumber, Descending))
 
   def tags = Tag.findAll(By(Tag.account, this.id))
 

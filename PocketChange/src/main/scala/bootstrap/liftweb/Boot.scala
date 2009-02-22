@@ -8,6 +8,7 @@ import Helpers._
 import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
+import com.pocketchangeapp.util.Charting
 import net.lag.configgy.Configgy
 import net.lag.logging.Logger
  
@@ -26,6 +27,16 @@ class Boot {
 	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName))
       case RewriteRequest(ParsePath("viewAcct" :: acctName :: tag :: Nil, _, _, _), _, _) =>
 	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName, "tag" -> tag))
+    }
+
+    // Custom dispatch for graph generation
+    LiftRules.dispatch.append {
+      case Req("graph" :: acctName :: "history" :: Nil, _, _) =>
+	() => Full(Charting.history(acctName))
+      case Req("graph" :: acctName :: "tagpie" :: Nil, _, _) =>
+	() => Full(Charting.tagpie(acctName))
+      case Req("graph" :: acctName :: "tagbar" :: Nil, _, _) =>
+	() => Full(Charting.tagbar(acctName))
     }
 
     Configgy.configure("pca.conf")

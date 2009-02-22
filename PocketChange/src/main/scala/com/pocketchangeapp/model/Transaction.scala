@@ -5,11 +5,14 @@
 package com.pocketchangeapp.model
 
 import _root_.java.math.MathContext
+import _root_.java.util.Date
 
 import _root_.net.liftweb.mapper._
 import _root_.scala.xml.Text
 
 import _root_.net.liftweb.util.Helpers._
+
+import com.pocketchangeapp.util.Util
 
 class Transaction extends LongKeyedMapper[Transaction] with IdPK {
   def getSingleton = Transaction
@@ -20,11 +23,15 @@ class Transaction extends LongKeyedMapper[Transaction] with IdPK {
 
   object dateOf extends MappedDateTime(this)
 
-  // The amount has up to 16 digits and 2 decimal places
+  object serialNumber extends MappedLong(this)
+
+  // The amount and balance fields have up to 16 digits and 2 decimal places
+  object currentBalance extends MappedDecimal(this, MathContext.DECIMAL64, 2)
+
   object amount extends MappedDecimal(this, MathContext.DECIMAL64, 2)
 
   // Holds a brief description of the transaction
-  object summary extends MappedString(this, 100) 
+  object description extends MappedString(this, 100) 
 
   object notes extends MappedTextarea(this, 1000) {
     override def textareaCols = 60
@@ -59,13 +66,56 @@ class Transaction extends LongKeyedMapper[Transaction] with IdPK {
 
 object Transaction extends Transaction with LongKeyedMetaMapper[Transaction] {
   override def dbTableName = "transactions"
-  override def fieldOrder = List(dateOf, amount, summary, notes)
+  override def fieldOrder = List(dateOf, amount, description, notes)
 
   override def afterSave = addTags _ :: Nil
 
   private def addTags (tx : Transaction) {
     if (tx._tags ne null) {
       tx._tags.foreach(TransactionTag.create.transaction(tx).tag(_).save)
+    }
+  }
+  
+  // returns the serial and balance of the last entry before this one
+  def getLastEntryData (date : Date) : (Long,BigDecimal) = {
+    // Find the last transaction on or before the given date
+    val results = Transaction.findAll(
+      BySql(String.format("%s.%s <= '%s'",
+			  Transaction.dbTableName,
+			  Transaction.dateOf.dbColumnName,
+			  Util.noSlashDate.format(date)),
+	    IHaveValidatedThisSQL("dchenbecker", "2009-02-21")),
+      OrderBy(Transaction.dateOf, Descending),
+      MaxRows(1))
+
+    results match {
+      case entry :: Nil => (entry.serialNumber.is, entry.currentBalance.is)
+      case Nil => (0,BigDecimal(0))
+      case _ => throw new Exception("Invalid prior entry query results") // TODO: handle this better
+    }
+  }
+
+  val updateString = String.format("update %s set %s = %s + 1, %s = %s + ? where %s >= ?",
+				   Transaction.dbTableName,
+				   Transaction.serialNumber.dbColumnName,
+				   Transaction.serialNumber.dbColumnName,
+				   Transaction.currentBalance.dbColumnName,
+				   Transaction.currentBalance.dbColumnName,
+				   Transaction.serialNumber.dbColumnName)
+
+  /**
+   * This method should be called before inserting the new serial number or else you'll get
+   * a duplicate serial
+   */
+  def updateEntries (serial : Long, amount : BigDecimal) = {
+    // Simpler to do a bulk update via SQL, unfortunately
+    DB.use(DefaultConnectionIdentifier) { conn =>
+	DB.prepareStatement(updateString, conn) { stmt =>
+	  // pass in the underlying java BigDecimal
+	  stmt.setBigDecimal(1, amount.bigDecimal)
+	  stmt.setLong(2, serial)
+	  stmt.executeUpdate()					 
+	}
     }
   }
 }
