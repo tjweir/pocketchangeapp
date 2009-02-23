@@ -5,6 +5,7 @@ import java.util.Date
 import scala.xml._
 import net.liftweb._
 import http._
+import js._
 import util._
 import S._
 import SHtml._
