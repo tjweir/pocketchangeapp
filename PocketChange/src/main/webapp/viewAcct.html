@@ -26,6 +26,8 @@
 	  <td><acct:startDate /></td>
 	  <th>End Date</th>
 	  <td><acct:endDate /></td>
+	  <th>Graph Type</th>
+	  <td><acct:graphType /></td>
 	</tr>
       </table>
     </div>
@@ -39,9 +41,7 @@
 
 <div class="column span-24" >
   <h2>Transactions</h2>
-  <div id="tx_table">
-    <lift:embed what="tx_table" />
-  </div>
+  <lift:embed what="tx_table" />
   <!-- TODO: needs pagination -->
 </div>
   </lift:Accounts.detail>

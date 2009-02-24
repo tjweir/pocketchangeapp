@@ -33,10 +33,16 @@ object Util {
     } 
   }
 
-  def getDateParam(name : String, converter : (String) => Date) : Box[Date] =
+  type DateConverter = String => Date
+
+  def parseDate(value : String, converter : DateConverter) : Box[Date] =
     try {
-      S.param(name).map(converter(_))
+      Full(converter(value))
     } catch {
       case e => Empty
     }  
+
+  def getDateParam(name : String, converter : DateConverter) : Box[Date] = {
+    S.param(name).map(parseDate(_, converter)) openOr Empty
+  }
 }

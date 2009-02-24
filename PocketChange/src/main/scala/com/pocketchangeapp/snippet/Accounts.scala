@@ -68,6 +68,10 @@ class Accounts {
 	 "save" -> submit("Save", doSave))
   }
 
+  final val graphChoices = List("history" -> "Balance History",
+				"tagpie" -> "Pie chart by tag totals",
+				"tagbar" -> "Bar chart of tag totals")
+
   def detail (xhtml: NodeSeq) : NodeSeq = S.param("name") match {
     case Full(acctName) => {
       Account.findByName(User.currentUser.open_!, acctName) match {
@@ -75,23 +79,56 @@ class Accounts {
 	  val tags = <a href={"/viewAcct/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
 	         acct.tags.flatMap({tag => <a href={"/viewAcct/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
 
-	  // Some state for the Ajax calls
+	  // Some closure state for the Ajax calls
 	  var startDate : Box[Date] = Empty
 	  var endDate : Box[Date] = Empty
+	  var graphType = "history"
+	  val tag = S.param("tag")
 
-	  val tableEntries = (S.param("tag") match {
-	    case Full(tag) => acct.transactions.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
-	    case _ => acct.transactions
-	  })
+	  // Ajax utility methods. Defined here to capture the closure vars defined above
+	  def entryTable = buildTxTable(Transaction.getByAcct(acct, startDate, endDate, Empty), tag, xhtml)
+
+	  def updateGraph() = {
+	    val dateClause : String = if (startDate.isDefined || endDate.isDefined) {
+	      List(startDate.map("start=" + Util.noSlashDate.format(_)),
+		   endDate.map("end=" + Util.noSlashDate.format(_))).filter(_.isDefined).map(_.open_!).mkString("?","&","")
+	    } else ""
+
+	    println("Date clause = " + dateClause)
+
+	    val url = "/graph/" + acctName + "/" + graphType + dateClause
+
+	    JsCmds.SetHtml("tx_graph", <img src={url} />)
+	  }
+
+	  def updateTable() = {
+	    JsCmds.SetHtml("tx_table", entryTable)
+	  }
+
+	  def updateStartDate (date : String) = {
+	    startDate = Util.parseDate(date, Util.slashDate.parse)
+	    updateGraph() & updateTable()
+	  }
+
+	  def updateEndDate (date : String) = {
+	    endDate = Util.parseDate(date, Util.slashDate.parse)
+	    updateGraph() & updateTable()
+	  }
+	   
+	  def updateGraphType(newType : String) = {
+	    graphType = newType
+	    updateGraph()
+	  }
 
 	  bind("acct", xhtml, 
 	       "name" -> acct.name.asHtml,
 	       "balance" -> acct.balance.asHtml,
 	       "tags" -> tags,
-	       "startDate" -> Text(""),
-	       "endDate" -> Text(""),
+	       "startDate" -> SHtml.ajaxText("", updateStartDate),
+	       "endDate" -> SHtml.ajaxText("", updateEndDate),
+	       "graphType" -> SHtml.ajaxSelect(graphChoices, Full("history"), updateGraphType),
 	       "graph" -> <img src={"/graph/" + acctName + "/history"} />,
-	       "table" -> buildTxTable(tableEntries, xhtml))
+	       "table" -> entryTable)
 	}
 	case _ => Text("Could not locate account " + acctName)
       }
@@ -99,8 +136,13 @@ class Accounts {
     case _ => Text("No account name provided")
   }
 
-  def buildTxTable(entries : List[Transaction], template : NodeSeq) = {
-    entries.flatMap({ entry =>
+  def buildTxTable(entries : List[Transaction], tag : Box[String], template : NodeSeq) = {
+    val filtered = tag match {
+      case Full(tag) => entries.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
+      case _ => entries
+    }
+
+    filtered.flatMap({ entry =>
       bind("entry", chooseTemplate("acct", "tableEntry", template),
 	   "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
 	   "desc" -> Text(entry.description.is),
