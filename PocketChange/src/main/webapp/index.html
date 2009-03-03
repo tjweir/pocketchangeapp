@@ -1,13 +1,17 @@
 <lift:surround with="default" at="content">
 <head>
   <!-- required plugins -->
-  <script type="text/javascript" src="/scripts/date.js"></script>
+  <!-- <script type="text/javascript" src="/scripts/date.js"></script> -->
   <!--[if IE]><script type="text/javascript" src="/scripts/jquery.bgiframe.js"></script><![endif]-->
+  <!-- <link rel="stylesheet" type="text/css" href="/style/datePicker.css" /> -->
+
+  <link rel="stylesheet" type="text/css" href="/style/ui.all.css" />
+  <link rel="stylesheet" type="text/css" href="/style/ui.datepicker.css" />
 
   <!-- jquery.datePicker.js -->
-  <script type="text/javascript" src="/scripts/jquery.datePicker.js"></script>
+  <!-- <script type="text/javascript" src="/scripts/jquery.datePicker.js"></script> -->
+  <script type="text/javascript" src="/scripts/jquery-ui.min.js"></script>
 
-  <link rel="stylesheet" type="text/css" href="/style/datePicker.css" />
   
   <style>
   a.dp-choose-date {
@@ -48,19 +52,35 @@
 
       <div class="column span-24">
         <lift:AddEntry.addentry form="POST">
-        <div id="entryform">
           <div class="column span-24"><h3>Entry Form</h3>
-            <e:account /> <e:dateOf /> <e:desc /> <e:value /> <e:tags/><button>Add $</button>
+        <div id="entryform">
+          <table>
+          <tr>
+            <td>Account</td>
+            <td>Date</td>
+            <td>Description</td>
+            <td>Value</td>
+            <td>Tags</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><e:account /></td>
+            <td><e:dateOf /></td>
+            <td><e:desc /></td>
+            <td><e:value /></td>
+            <td><e:tags/></td>
+            <td><button>Add Expense</button></td>
+          </tr>
+          </table>
           </div>
         </div>
         </lift:AddEntry.addentry>
       </div>
 
     <script type="text/javascript">
-      Date.format = 'yyyy/mm/dd';
-      jQuery(function () {
-        jQuery('#entrydate').datePicker({startDate:'00010101', clickInput:true});
-      })
+      $(function() {
+        $('#entrydate').datepicker({dateFormat:'yy/mm/dd'});
+      });
     </script>
 </lift:surround>
 

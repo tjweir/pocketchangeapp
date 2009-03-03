@@ -38,11 +38,13 @@
       <name>Scala-Tools Maven2 Snapshot Repository</name>
       <url>http://scala-tools.org/repo-snapshots</url>
     </repository>
+    <!--
     <repository>
       <id>http://www.lag.net/repo/</id>
       <name>http://www.lag.net/repo/</name>
       <url>http://www.lag.net/repo/</url>
     </repository>
+    -->
     <!-- JFree -->
     
     <!--
@@ -113,11 +115,13 @@
       <artifactId>jfreechart</artifactId>
       <version>1.0.9</version>
     </dependency>   
+    <!-- 
     <dependency>
       <groupId>net.lag</groupId>
       <artifactId>configgy</artifactId>
       <version>1.2</version>
     </dependency>
+    -->
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>

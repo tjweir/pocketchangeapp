@@ -9,9 +9,10 @@ import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionI
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
 import com.pocketchangeapp.util.Charting
+/*
 import net.lag.configgy.Configgy
 import net.lag.logging.Logger
- 
+ */
 /* Connect Lucene/Compass for search */
 class Boot {
   def boot {
@@ -39,12 +40,12 @@ class Boot {
 	() => Full(Charting.tagbar(acctName))
     }
 
+    /*
     Configgy.configure("pca.conf")
     val log = Logger.get
-    /* Useful? */
     log.info("Configgy up")
     log.info("Bootstrap up")
-
+    */
   }
 }
 
