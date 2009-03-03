@@ -17,8 +17,6 @@ import net.lag.logging.Logger
 class HomePage {
   val log = Logger.get
 
-  def howdy = <span>Welcome to PocketChange at {new java.util.Date}</span>
-
   val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
   def summary (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
@@ -33,13 +31,7 @@ class HomePage {
       }
       bind("account", xhtml, "entry" -> entries)
     }
-    case _ => Text("")
+    case _ => <lift:embed what="welcome_msg" />
   }
-
-  def welcome (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
-    case Empty => <lift:embed what="welcome_msg" />
-    case _ => Text("")
-  }
-
 }
 
