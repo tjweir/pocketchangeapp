@@ -18,7 +18,7 @@ class Account extends LongKeyedMapper[Account] with IdPK {
 
   def admins = AccountAdmin.findAll(By(AccountAdmin.account, this.id))
 
-  def addAdmin (user : User) = AccountAdmin.create.account(this).admin(user).save
+  def addAdmin (user : User) = AccountAdmin.create.account(this).administrator(user).save
 
   def viewers = AccountViewer.findAll(By(AccountViewer.account, this.id))
 
@@ -29,7 +29,7 @@ class Account extends LongKeyedMapper[Account] with IdPK {
   // The balance has up to 16 digits and 2 decimal places
   object balance extends MappedDecimal(this, MathContext.DECIMAL64, 2)
 
-  def transactions = Transaction.getByAcct(this, Empty, Empty, Empty)
+  def entries = Expense.getByAcct(this, Empty, Empty, Empty)
 
   def tags = Tag.findAll(By(Tag.account, this.id))
 
@@ -43,8 +43,6 @@ class Account extends LongKeyedMapper[Account] with IdPK {
 }
 
 object Account extends Account with LongKeyedMetaMapper[Account] {
-  override def dbTableName = "accounts"
-  
   def findByName (owner : User, name : String) : List[Account] = 
     Account.findAll(By(Account.owner, owner.id.is), By(Account.name, name))
 }
@@ -57,13 +55,12 @@ class AccountAdmin extends LongKeyedMapper[AccountAdmin] with IdPK {
     override def dbIndexed_? = true
   }
 
-  object admin extends MappedLongForeignKey(this, User) {
+  object administrator extends MappedLongForeignKey(this, User) {
     override def dbIndexed_? = true
   }
 }
 
 object AccountAdmin extends AccountAdmin with LongKeyedMetaMapper[AccountAdmin] {
-  override def dbTableName = "account_admins"
 }
 
 class AccountViewer extends LongKeyedMapper[AccountViewer] with IdPK {
@@ -78,9 +75,7 @@ class AccountViewer extends LongKeyedMapper[AccountViewer] with IdPK {
   }
 }
 
-object AccountViewer extends AccountViewer with LongKeyedMetaMapper[AccountViewer] {
-  override def dbTableName = "account_viewers"
-}
+object AccountViewer extends AccountViewer with LongKeyedMetaMapper[AccountViewer]
 
 // Extra
 class AccountNote extends LongKeyedMapper[AccountNote] with IdPK {
@@ -94,7 +89,5 @@ class AccountNote extends LongKeyedMapper[AccountNote] with IdPK {
 }
 
 object AccountNote extends AccountNote with LongKeyedMetaMapper[AccountNote] {
-  override def dbTableName = "account_notes"
-
   override def fieldOrder = note :: Nil
 }

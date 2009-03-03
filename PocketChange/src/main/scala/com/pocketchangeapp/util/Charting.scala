@@ -47,10 +47,10 @@ object Charting {
 
   def history (name : String) : LiftResponse = withAccount(name) {
     acct =>
-      val entries = Transaction.getByAcct(acct, 
-					  Util.getDateParam("start", Util.noSlashDate.parse),
-					  Util.getDateParam("end", Util.noSlashDate.parse),
-					  Empty)
+      val entries = Expense.getByAcct(acct, 
+				      Util.getDateParam("start", Util.noSlashDate.parse),
+				      Util.getDateParam("end", Util.noSlashDate.parse),
+				      Empty)
 
     val serialMap = new HashMap[String,Long]()
     val dateMap = new HashMap[String,BigDecimal]()
@@ -77,10 +77,10 @@ object Charting {
   }
 
   private def buildTagChartData (account: Account) = {
-    val entries = Transaction.getByAcct(account, 
-					Util.getDateParam("start", Util.noSlashDate.parse),
-					Util.getDateParam("end", Util.noSlashDate.parse),
-					Empty)
+    val entries = Expense.getByAcct(account, 
+				    Util.getDateParam("start", Util.noSlashDate.parse),
+				    Util.getDateParam("end", Util.noSlashDate.parse),
+				    Empty)
     
     val tagMap = new HashMap[String,BigDecimal]
 
@@ -106,7 +106,7 @@ object Charting {
 					    dataset,
 					    false, false, false)
 						  
-    chart.addSubtitle(new TextTitle("Transactions may have multiple tags, so total may exceed account balance"))
+    chart.addSubtitle(new TextTitle("Entries may have multiple tags, so total may exceed account balance"))
 
     val itemLabel = new StandardPieSectionLabelGenerator("{0} = {1} ({2})", new DecimalFormat("0.00"), new DecimalFormat("0%"))
 
@@ -129,7 +129,7 @@ object Charting {
 					    PlotOrientation.VERTICAL,
 					    false, false, false)
 						  
-    chart.addSubtitle(new TextTitle("Transactions may have multiple tags, so total may exceed account balance"))
+    chart.addSubtitle(new TextTitle("Entries may have multiple tags, so total may exceed account balance"))
 
     val itemLabel = new StandardCategoryItemLabelGenerator("{0} = {1}", new DecimalFormat("0.00"))
 

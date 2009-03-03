@@ -6,8 +6,6 @@ import util._
 import Helpers._
 
 object Tag extends Tag with LongKeyedMetaMapper[Tag] {
-  override def dbTableName = "tags"
-
   def byName (accountId : Long, name : String) = 
     findAll(By(Tag.account, accountId), By(Tag.tag, name)) match {
       case tag :: rest => tag

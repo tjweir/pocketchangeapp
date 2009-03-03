@@ -27,7 +27,7 @@ class HomePage {
 	case Nil => Text("You have no accounts set up") // Add link to create one...
 	case accounts => accounts.flatMap({account => 
 	  bind("acct", chooseTemplate("account", "entry", xhtml),
-	       "name" -> <a href={"/viewAcct/" + account.name.is}>{account.name.is}</a>,
+	       "name" -> <a href={"/account/" + account.name.is}>{account.name.is}</a>,
 	       "balance" -> Text(account.balance.toString))
 					 })
       }

@@ -36,7 +36,7 @@ class AddEntry extends StatefulSnippet {
 	if (tags.trim.length == 0) error("We're going to need at least one tag.")
 	else {
           /* Get the date correctly, add the datepicker: comes in as yyyy/mm/dd */
-	  val txDate = Util.slashDate.parse(date)
+	  val entryDate = Util.slashDate.parse(date)
 
 	  val amount = BigDecimal(value)
 
@@ -44,17 +44,17 @@ class AddEntry extends StatefulSnippet {
 	  val currentAccount = Account.find(account).open_!
 
 	  // We need to determine the last serial number and balance for the date in question
-	  val (txSerial,txBalance) = Transaction.getLastEntryData(currentAccount, txDate)
+	  val (entrySerial,entryBalance) = Expense.getLastExpenseData(currentAccount, entryDate)
 
-	  println("Last entry = " + (txSerial, txBalance))
+	  println("Last entry = " + (entrySerial, entryBalance))
 	  
-	  val e = Transaction.create.account(account).dateOf(txDate).serialNumber(txSerial + 1)
+	  val e = Expense.create.account(account).dateOf(entryDate).serialNumber(entrySerial + 1)
 	           .description(desc).amount(BigDecimal(value)).tags(tags)
-		   .currentBalance(txBalance + amount)
+		   .currentBalance(entryBalance + amount)
 
 	  e.validate match {
             case Nil => {
-	      Transaction.updateEntries(txSerial + 1, amount)
+	      Expense.updateEntries(entrySerial + 1, amount)
               e.save
   	      val acct = Account.find(account).open_!
 	      val newBalance = acct.balance.is + e.amount.is

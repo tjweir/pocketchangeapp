@@ -15,8 +15,8 @@ import _root_.net.liftweb.util.{Box,Empty,Full}
 
 import com.pocketchangeapp.util.Util
 
-class Transaction extends LongKeyedMapper[Transaction] with IdPK {
-  def getSingleton = Transaction
+class Expense extends LongKeyedMapper[Expense] with IdPK {
+  def getSingleton = Expense
 
   object account extends MappedLongForeignKey(this, Account) {
     override def dbIndexed_? = true
@@ -31,7 +31,7 @@ class Transaction extends LongKeyedMapper[Transaction] with IdPK {
 
   object amount extends MappedDecimal(this, MathContext.DECIMAL64, 2)
 
-  // Holds a brief description of the transaction
+  // Holds a brief description of the entry
   object description extends MappedString(this, 100) 
 
   object notes extends MappedTextarea(this, 1000) {
@@ -39,7 +39,7 @@ class Transaction extends LongKeyedMapper[Transaction] with IdPK {
     override def textareaRows = 8
   }
 
-  private object _dbTags extends HasManyThrough(this, Tag, TransactionTag, TransactionTag.transaction, TransactionTag.tag)
+  private object _dbTags extends HasManyThrough(this, Tag, ExpenseTag, ExpenseTag.expense, ExpenseTag.tag)
 
   private[model] var _tags : List[Tag] = _
 
@@ -65,42 +65,41 @@ class Transaction extends LongKeyedMapper[Transaction] with IdPK {
   def showTags = Text(tags.map(_.tag.is).mkString(", "))
 }
 
-object Transaction extends Transaction with LongKeyedMetaMapper[Transaction] {
-  override def dbTableName = "transactions"
+object Expense extends Expense with LongKeyedMetaMapper[Expense] {
   override def fieldOrder = List(dateOf, amount, description, notes)
 
   override def afterSave = addTags _ :: Nil
 
-  private def addTags (tx : Transaction) {
-    if (tx._tags ne null) {
-      tx._tags.foreach(TransactionTag.create.transaction(tx).tag(_).save)
+  private def addTags (entry : Expense) {
+    if (entry._tags ne null) {
+      entry._tags.foreach(ExpenseTag.create.expense(entry).tag(_).save)
     }
   }
 
-  def getByAcct (account : Account, startDate : Box[Date], endDate : Box[Date], order : Box[OrderBy[Transaction,_]], params : QueryParam[Transaction]*) : List[Transaction] = {
+  def getByAcct (account : Account, startDate : Box[Date], endDate : Box[Date], order : Box[OrderBy[Expense,_]], params : QueryParam[Expense]*) : List[Expense] = {
     // Set up some query parameters
-    val dateClause : QueryParam[Transaction] = (startDate,endDate) match {
-      case (Full(start), Full(end)) => BySql("transactions.dateOf between ? and ?",
+    val dateClause : QueryParam[Expense] = (startDate,endDate) match {
+      case (Full(start), Full(end)) => BySql("Expense.dateOf between ? and ?",
 					     IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
 					     start, end)
-      case (Full(start), Empty) => BySql("transactions.dateOf >= ?",
+      case (Full(start), Empty) => BySql("Expense.dateOf >= ?",
 					 IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
 					 start)
-      case (Empty, Full(end)) => BySql("transactions.dateOf <= ?",
+      case (Empty, Full(end)) => BySql("Expense.dateOf <= ?",
 				       IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
 				       end)
-      case _ => new Ignore[Transaction]
+      case _ => new Ignore[Expense]
     }
     
-    val txOrder : QueryParam[Transaction] = order openOr OrderBy(Transaction.serialNumber, Descending)
+    val entryOrder : QueryParam[Expense] = order openOr OrderBy(Expense.serialNumber, Descending)
       
-    Transaction.findAll((By(Transaction.account, account.id) :: dateClause :: txOrder :: params.toList).toSeq : _*)
+    Expense.findAll((By(Expense.account, account.id) :: dateClause :: entryOrder :: params.toList).toSeq : _*)
   }
 
   
   // returns the serial and balance of the last entry before this one
-  def getLastEntryData (acct : Account, date : Date) : (Long,BigDecimal) = {
-    // Find the last transaction on or before the given date
+  def getLastExpenseData (acct : Account, date : Date) : (Long,BigDecimal) = {
+    // Find the last entry on or before the given date
     val results = getByAcct(acct, Empty, Full(date), Empty, MaxRows(1))
 
     results match {
@@ -111,12 +110,12 @@ object Transaction extends Transaction with LongKeyedMetaMapper[Transaction] {
   }
 
   val updateString = String.format("update %s set %s = %s + 1, %s = %s + ? where %s >= ?",
-				   Transaction.dbTableName,
-				   Transaction.serialNumber.dbColumnName,
-				   Transaction.serialNumber.dbColumnName,
-				   Transaction.currentBalance.dbColumnName,
-				   Transaction.currentBalance.dbColumnName,
-				   Transaction.serialNumber.dbColumnName)
+				   Expense.dbTableName,
+				   Expense.serialNumber.dbColumnName,
+				   Expense.serialNumber.dbColumnName,
+				   Expense.currentBalance.dbColumnName,
+				   Expense.currentBalance.dbColumnName,
+				   Expense.serialNumber.dbColumnName)
 
   /**
    * This method should be called before inserting the new serial number or else you'll get
@@ -135,19 +134,18 @@ object Transaction extends Transaction with LongKeyedMetaMapper[Transaction] {
   }
 }
   
-class TransactionTag extends LongKeyedMapper[TransactionTag] with IdPK {
-  def getSingleton = TransactionTag
+class ExpenseTag extends LongKeyedMapper[ExpenseTag] with IdPK {
+  def getSingleton = ExpenseTag
 
   object tag extends MappedLongForeignKey(this, Tag) {
     override def dbIndexed_? = true
   }
 
-  object transaction extends MappedLongForeignKey(this, Transaction) {
+  object expense extends MappedLongForeignKey(this, Expense) {
     override def dbIndexed_? = true
   }
 }
 
-object TransactionTag extends TransactionTag with LongKeyedMetaMapper[TransactionTag] {
-  override def dbTableName = "transaction_tags"
+object ExpenseTag extends ExpenseTag with LongKeyedMetaMapper[ExpenseTag] {
   override def fieldOrder = Nil
 }
