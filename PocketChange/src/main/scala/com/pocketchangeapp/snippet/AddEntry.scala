@@ -23,7 +23,7 @@ class AddEntry extends StatefulSnippet {
   }
 
   var account : Long = _
-<<<<<<< HEAD:P  var date = ""
+  var date = ""
   var desc = ""
   var value = ""
   var tags = S.param("tag") openOr ""
