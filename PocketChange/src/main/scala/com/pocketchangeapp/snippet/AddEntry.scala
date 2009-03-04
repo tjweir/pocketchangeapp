@@ -23,48 +23,48 @@ class AddEntry extends StatefulSnippet {
   }
 
   var account : Long = _
-    var date = ""
-    var desc = ""
-    var value = ""
-    var tags = S.param("tag") openOr ""
+<<<<<<< HEAD:P  var date = ""
+  var desc = ""
+  var value = ""
+  var tags = S.param("tag") openOr ""
+  
+  def add(in: NodeSeq): NodeSeq = User.currentUser match {
+    case Full(user) if user.editable.size > 0 => {
 
-    def add(in: NodeSeq): NodeSeq = User.currentUser match {
-      case Full(user) if user.editable.size > 0 => {
+      def doTagsAndSubmit(t: String) {
+	tags = t
+	if (tags.trim.length == 0) error("We're going to need at least one tag.")
+	else {
+          /* Get the date correctly, add the datepicker: comes in as yyyy/mm/dd */
+	  val entryDate = Util.slashDate.parse(date)
 
-        def doTagsAndSubmit(t: String) {
-          tags = t
-            if (tags.trim.length == 0) error("We're going to need at least one tag.")
-            else {
-              /* Get the date correctly, add the datepicker: comes in as yyyy/mm/dd */
-              val txDate = Util.slashDate.parse(date)
+	  val amount = BigDecimal(value)
 
-              val amount = BigDecimal(value)
+	  // Rework to not throw exceptions
+	  val currentAccount = Account.find(account).open_!
 
-              // Rework to not throw exceptions
-              val currentAccount = Account.find(account).open_!
+	  // We need to determine the last serial number and balance for the date in question
+	  val (entrySerial,entryBalance) = Expense.getLastExpenseData(currentAccount, entryDate)
 
-              // We need to determine the last serial number and balance for the date in question
-              val (txSerial,txBalance) = Transaction.getLastEntryData(currentAccount, txDate)
+	  println("Last entry = " + (entrySerial, entryBalance))
+	  
+	  val e = Expense.create.account(account).dateOf(entryDate).serialNumber(entrySerial + 1)
+	           .description(desc).amount(BigDecimal(value)).tags(tags)
+		   .currentBalance(entryBalance + amount)
 
-              println("Last entry = " + (txSerial, txBalance))
-
-              val e = Transaction.create.account(account).dateOf(txDate).serialNumber(txSerial + 1)
-              .description(desc).amount(BigDecimal(value)).tags(tags)
-              .currentBalance(txBalance + amount)
-
-              e.validate match {
-                case Nil => {
-                  Transaction.updateEntries(txSerial + 1, amount)
-                    e.save
-                    val acct = Account.find(account).open_!
-                    val newBalance = acct.balance.is + e.amount.is
-                    acct.balance(newBalance).save
-                    notice("Entry added!")
-                    unregisterThisSnippet() // dpp: remove the statefullness of this snippet
-                }
-                case x => error(x)
-              }
-          }
+	  e.validate match {
+            case Nil => {
+	      Expense.updateEntries(entrySerial + 1, amount)
+              e.save
+  	      val acct = Account.find(account).open_!
+	      val newBalance = acct.balance.is + e.amount.is
+	      acct.balance(newBalance).save
+              notice("Entry added!")
+	      unregisterThisSnippet() // dpp: remove the statefullness of this snippet
+	    }
+            case x => error(x)
+	  }
+	}
       }
 
         bind("e", in, 

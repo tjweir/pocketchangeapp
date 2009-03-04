@@ -36,7 +36,7 @@ class User extends MegaProtoUser[User] {
   
   def accounts : List[Account] = Account.findAll(By(Account.owner, this.id))
 
-  def administered : List[Account] = AccountAdmin.findAll(By(AccountAdmin.admin, this.id)).map(_.account.obj.open_!)
+  def administered : List[Account] = AccountAdmin.findAll(By(AccountAdmin.administrator, this.id)).map(_.account.obj.open_!)
 
   def editable = accounts ++ administered
     

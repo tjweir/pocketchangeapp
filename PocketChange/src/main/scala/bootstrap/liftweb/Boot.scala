@@ -9,25 +9,23 @@ import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionI
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
 import com.pocketchangeapp.util.Charting
-/*
-import net.lag.configgy.Configgy
-import net.lag.logging.Logger
- */
+import _root_.org.apache.log4j.LogManager
+ 
 /* Connect Lucene/Compass for search */
 class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
     LiftRules.addToPackages("com.pocketchangeapp")     
-    Schemifier.schemify(true, Log.infoF _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Transaction, TransactionTag)
+    Schemifier.schemify(true, Log.infoF _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Expense, ExpenseTag)
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
 
     // Set up some rewrites
     LiftRules.rewrite.append {
-      case RewriteRequest(ParsePath("viewAcct" :: acctName :: Nil, _, _, _), _, _) =>
-	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName))
-      case RewriteRequest(ParsePath("viewAcct" :: acctName :: tag :: Nil, _, _, _), _, _) =>
-	RewriteResponse("viewAcct" :: Nil, Map("name" -> acctName, "tag" -> tag))
+      case RewriteRequest(ParsePath(List("account", acctName), _, _, _), _, _) =>
+	RewriteResponse("viewAcct" :: Nil, Map("name" -> urlDecode(acctName)))
+      case RewriteRequest(ParsePath(List("account", acctName, tag), _, _, _), _, _) =>
+	RewriteResponse("viewAcct" :: Nil, Map("name" -> urlDecode(acctName), "tag" -> urlDecode(tag)))
     }
 
     // Custom dispatch for graph generation
@@ -40,12 +38,6 @@ class Boot {
 	() => Full(Charting.tagbar(acctName))
     }
 
-    /*
-    Configgy.configure("pca.conf")
-    val log = Logger.get
-    log.info("Configgy up")
-    log.info("Bootstrap up")
-    */
   }
 }
 

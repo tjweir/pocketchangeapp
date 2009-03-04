@@ -12,35 +12,23 @@ import com.pocketchangeapp.model._
 
 import java.util.Date
 
-//import net.lag.logging.Logger
 
 class HomePage {
-  // val log = Logger.get
+  val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
-  def howdy = <span>Welcome to PocketChange at {new java.util.Date}</span>
-
-    val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
-
-    def summary (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
-      case Full(user) => {
-        val entries : NodeSeq = user.allAccounts match {
-          case Nil => Text("You have no accounts set up") // Add link to create one...
-          case accounts => accounts.flatMap({account => 
-            bind("acct", chooseTemplate("account", "entry", xhtml),
-                 "name" -> <a href={"/viewAcct/" + account.name.is}>{account.name.is}</a>,
-                 "balance" -> Text(account.balance.toString))
-          })
-        }
-        
-        bind("account", xhtml, "entry" -> entries)
+  def summary (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
+    case Full(user) => {
+      val entries : NodeSeq = user.allAccounts match {
+	case Nil => Text("You have no accounts set up") // Add link to create one...
+	case accounts => accounts.flatMap({account => 
+	  bind("acct", chooseTemplate("account", "entry", xhtml),
+	       "name" -> <a href={"/account/" + account.name.is}>{account.name.is}</a>,
+	       "balance" -> Text(account.balance.toString))
+					 })
       }
-      case _ => Text("")
+      bind("account", xhtml, "entry" -> entries)
     }
-
-  def welcome (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
-    case Empty => <lift:embed what="welcome_msg" />
-                        case _ => Text("")
+    case _ => <lift:embed what="welcome_msg" />
   }
-
 }
 

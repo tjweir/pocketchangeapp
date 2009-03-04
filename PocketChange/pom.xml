@@ -29,22 +29,10 @@
   -->
   <repositories>
     <repository>
-      <id>scala-tools.org</id>
-      <name>Scala-Tools Maven2 Repository</name>
-      <url>http://scala-tools.org/repo-releases</url>
-    </repository>
-    <repository>
-      <id>scala-tools.org-snapshot</id>
-      <name>Scala-Tools Maven2 Snapshot Repository</name>
-      <url>http://scala-tools.org/repo-snapshots</url>
-    </repository>
-    <!--
-    <repository>
       <id>http://www.lag.net/repo/</id>
       <name>http://www.lag.net/repo/</name>
       <url>http://www.lag.net/repo/</url>
     </repository>
-    -->
     <!-- JFree -->
     
     <!--
@@ -93,22 +81,22 @@
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-core</artifactId>
-      <version>1.1-SNAPSHOT</version>
+     <version>1.0</version>
     </dependency>
       <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-util</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-webkit</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-mapper</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.0</version>
     </dependency> 
     <dependency>
       <groupId>jfree</groupId>

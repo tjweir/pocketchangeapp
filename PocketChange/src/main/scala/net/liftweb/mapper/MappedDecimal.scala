@@ -16,7 +16,7 @@ package net.liftweb.mapper
  * and limitations under the License.
  */
 
-import _root_.java.math.{BigDecimal => JBigDecimal,MathContext,RoundingMode}
+import _root_.java.math.{MathContext,RoundingMode}
 import _root_.java.sql.{ResultSet, Types}
 import _root_.java.lang.reflect.Method
 import _root_.net.liftweb.util.Helpers._
@@ -125,11 +125,14 @@ class MappedDecimal[T <: Mapper[T]] (val fieldOwner : T, val context : MathConte
   }
   
   /** Set the value along with proper scale, precision, and rounding */
-  protected def setAll (in : BigDecimal) = this.set(new BigDecimal(in.bigDecimal.round(context).setScale(scale)))
+  protected def setAll (in : BigDecimal) = this.set(coerce(in))
+
+  // Set the scale on the given input
+  protected def coerce (in : BigDecimal) = new BigDecimal(in.bigDecimal.setScale(scale, context.getRoundingMode))
 
   def targetSQLType = Types.DECIMAL
 
-  def jdbcFriendly(field : String) = i_is_!
+  def jdbcFriendly(field : String) = i_is_!.bigDecimal
 
   def real_convertToJDBCFriendly(value: BigDecimal): Object = value.bigDecimal
 

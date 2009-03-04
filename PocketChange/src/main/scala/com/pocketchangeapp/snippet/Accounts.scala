@@ -22,10 +22,10 @@ class Accounts {
       // No cascade???
       acct.admins.foreach(_.delete_!)
       acct.viewers.foreach(_.delete_!)
-      acct.transactions.foreach({
-	tx =>
-	  tx.tags.foreach(_.delete_!) // Need to delete tx tags, too
-	  tx.delete_!
+      acct.entries.foreach({
+	entry =>
+	  entry.tags.foreach(_.delete_!) // Need to delete entry tags, too
+	  entry.delete_!
       })
       acct.tags.foreach(_.delete_!)
       acct.notes.foreach(_.delete_!)
@@ -76,8 +76,8 @@ class Accounts {
     case Full(acctName) => {
       Account.findByName(User.currentUser.open_!, acctName) match {
 	case acct :: Nil => {
-	  val tags = <a href={"/viewAcct/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
-	         acct.tags.flatMap({tag => <a href={"/viewAcct/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
+	  val tags = <a href={"/account/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
+	         acct.tags.flatMap({tag => <a href={"/account/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
 
 	  // Some closure state for the Ajax calls
 	  var startDate : Box[Date] = Empty
@@ -86,7 +86,7 @@ class Accounts {
 	  val tag = S.param("tag")
 
 	  // Ajax utility methods. Defined here to capture the closure vars defined above
-	  def entryTable = buildTxTable(Transaction.getByAcct(acct, startDate, endDate, Empty), tag, xhtml)
+	  def entryTable = buildExpenseTable(Expense.getByAcct(acct, startDate, endDate, Empty), tag, xhtml)
 
 	  def updateGraph() = {
 	    val dateClause : String = if (startDate.isDefined || endDate.isDefined) {
@@ -94,15 +94,13 @@ class Accounts {
 		   endDate.map("end=" + Util.noSlashDate.format(_))).filter(_.isDefined).map(_.open_!).mkString("?","&","")
 	    } else ""
 
-	    println("Date clause = " + dateClause)
-
 	    val url = "/graph/" + acctName + "/" + graphType + dateClause
 
-	    JsCmds.SetHtml("tx_graph", <img src={url} />)
+	    JsCmds.SetHtml("entry_graph", <img src={url} />)
 	  }
 
 	  def updateTable() = {
-	    JsCmds.SetHtml("tx_table", entryTable)
+	    JsCmds.SetHtml("entry_table", entryTable)
 	  }
 
 	  def updateStartDate (date : String) = {
@@ -136,7 +134,7 @@ class Accounts {
     case _ => Text("No account name provided")
   }
 
-  def buildTxTable(entries : List[Transaction], tag : Box[String], template : NodeSeq) = {
+  def buildExpenseTable(entries : List[Expense], tag : Box[String], template : NodeSeq) = {
     val filtered = tag match {
       case Full(tag) => entries.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
       case _ => entries
