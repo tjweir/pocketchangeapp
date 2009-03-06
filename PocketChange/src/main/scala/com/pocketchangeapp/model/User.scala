@@ -16,12 +16,12 @@ object User extends User with MetaMegaProtoUser[User] {
   // Spruce up the forms a bit
   override def loginXhtml =
     <lift:surround with="default" at="content">
-      { super.loginXhtml }
+      <div id="formBox">{ super.loginXhtml }</div>
     </lift:surround>
 
   override def signupXhtml(user: User) = 
     <lift:surround with="default" at="content">
-      { super.signupXhtml(user) }
+      <div id="formBox">{ super.signupXhtml(user) }</div>
     </lift:surround>
 
   // define the order fields will appear in forms and output
