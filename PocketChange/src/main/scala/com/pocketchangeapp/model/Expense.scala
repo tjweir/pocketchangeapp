@@ -62,7 +62,14 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
     this
   }
 
-  def showTags = Text(tags.map(_.tag.is).mkString(", "))
+  def showTags = Text(tags.map(_.name.is).mkString(", "))
+
+  override def equals (other : Any) = other match {
+    case e : Expense if e.id.is == this.id.is => true
+    case _ => false
+  }
+
+  override def hashCode = this.id.is.hashCode
 }
 
 object Expense extends Expense with LongKeyedMetaMapper[Expense] {
@@ -72,7 +79,7 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
 
   private def addTags (entry : Expense) {
     if (entry._tags ne null) {
-      entry._tags.foreach(ExpenseTag.create.expense(entry).tag(_).save)
+      entry._tags.foreach(ExpenseTag.join(_, entry))
     }
   }
 
@@ -148,4 +155,12 @@ class ExpenseTag extends LongKeyedMapper[ExpenseTag] with IdPK {
 
 object ExpenseTag extends ExpenseTag with LongKeyedMetaMapper[ExpenseTag] {
   override def fieldOrder = Nil
+
+  def join (tag : Tag, tx : Expense) = 
+    this.create.tag(tag).expense(tx).save
+
+  def findTagExpenses (search : String) : List[Expense] = 
+    findAll(In(ExpenseTag.tag,
+	       Tag.id,
+	       Like(Tag.name, search))).map(_.expense.obj.open_!).removeDuplicates
 }

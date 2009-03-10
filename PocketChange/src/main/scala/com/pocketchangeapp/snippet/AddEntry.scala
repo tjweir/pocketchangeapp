@@ -14,8 +14,6 @@ import com.pocketchangeapp.util.Util
 
 import java.util.Date
 
-import net.lag.logging.Logger
-
 /* date | desc | tags | value */ 
 class AddEntry extends StatefulSnippet {
   def dispatch = {

@@ -77,7 +77,7 @@ class Accounts {
       Account.findByName(User.currentUser.open_!, acctName) match {
 	case acct :: Nil => {
 	  val tags = <a href={"/account/" + acct.name.is}>All tags</a> ++ Text(" ") ++ 
-	         acct.tags.flatMap({tag => <a href={"/account/" + acct.name.is + "/" + tag.tag.is}>{tag.tag.is}</a> ++ Text(" ")})
+	         acct.tags.flatMap({tag => <a href={"/account/" + acct.name.is + "/" + tag.name.is}>{tag.name.is}</a> ++ Text(" ")})
 
 	  // Some closure state for the Ajax calls
 	  var startDate : Box[Date] = Empty
@@ -134,9 +134,10 @@ class Accounts {
     case _ => Text("No account name provided")
   }
 
+  // Utility methods
   def buildExpenseTable(entries : List[Expense], tag : Box[String], template : NodeSeq) = {
     val filtered = tag match {
-      case Full(tag) => entries.filter(_.tags.exists(_.tag == tag)) // Can probably be made more efficient
+      case Full(name) => entries.filter(_.tags.exists(_.name == name)) // Can probably be made more efficient
       case _ => entries
     }
 
@@ -144,7 +145,7 @@ class Accounts {
       bind("entry", chooseTemplate("acct", "tableEntry", template),
 	   "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
 	   "desc" -> Text(entry.description.is),
-	   "tags" -> Text(entry.tags.map(_.tag.is).mkString(", ")),
+	   "tags" -> Text(entry.tags.map(_.name.is).mkString(", ")),
 	   "amt" -> Text(entry.amount.toString),
 	   "balance" -> Text(entry.currentBalance.toString))
 		    })

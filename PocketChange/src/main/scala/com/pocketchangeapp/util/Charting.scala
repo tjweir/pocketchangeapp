@@ -87,7 +87,7 @@ object Charting {
     val zero = BigDecimal(0)
 
     entries.foreach({ entry =>
-      entry.tags.map(_.tag.is).foreach { 
+      entry.tags.map(_.name.is).foreach { 
 	tag => tagMap += tag -> (tagMap.getOrElse(tag, zero) + entry.amount.is)
       }
     })

@@ -12,11 +12,7 @@ import com.pocketchangeapp.model._
 
 import java.util.Date
 
-import net.lag.logging.Logger
-
 class HomePage {
-  val log = Logger.get
-
   val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
   def summary (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
