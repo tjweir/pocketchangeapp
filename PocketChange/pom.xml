@@ -13,64 +13,19 @@
   <properties>
     <scala.version>2.7.3</scala.version>
   </properties>
-  <!--
+
   <developers>
-   <developer>
+    <developer>
       <id>dchenbecker</id>
       <name>Derek Chen-Becker</name>
       <timezone>0</timezone>
     </developer>
-   <developer>
+    <developer>
       <id>tyler.weir</id>
       <name>Tyler Weir</name>
       <timezone>-5</timezone>
     </developer>
   </developers> 
-  -->
-  <repositories>
-    <repository>
-      <id>http://www.lag.net/repo/</id>
-      <name>http://www.lag.net/repo/</name>
-      <url>http://www.lag.net/repo/</url>
-    </repository>
-    <!-- JFree -->
-    
-    <!--
-    <repository>
-      <id>ibiblio</id>
-      <name>Ibiblio Maven2 Repository</name>
-      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
-    </repository>
-    -->
-    <!--
-    <repository>
-      <id>JBoss</id>
-      <name>JBoss Maven2 Repository</name>
-      <url>http://repository.jboss.org/maven2/</url>
-    </repository>
-    <repository>
-      <id>Maven1</id>
-      <name>Maven Repo1 Maven2 Repository</name>
-      <url>http://repo1.maven.org/maven2/</url>
-    </repository>
-    -->
-    <!-- for gnujaxp -->
-    <!--
-    <repository>
-      <id>Atlassian</id>
-      <name>Atlassian Maven2 Repository</name>
-      <url>http://repository.atlassian.com/maven2/</url>
-    </repository>
-    -->
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>scala-tools.org</id>
-      <name>Scala-Tools Maven2 Repository</name>
-      <url>http://scala-tools.org/repo-releases</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -101,7 +56,13 @@
     <dependency>
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.0.9</version>
+      <version>1.0.11</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>gnujaxp</groupId>
+	  <artifactId>gnujaxp</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>   
     <dependency>
       <groupId>org.apache.derby</groupId>
@@ -123,16 +84,9 @@
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
-      <version>[6.1.12.rc5]</version>
+      <version>[6.1.12.rc5,)</version>
       <scope>test</scope>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.11</version>
-    </dependency> 
-    -->
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>

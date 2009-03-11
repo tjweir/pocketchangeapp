@@ -1,27 +1,27 @@
 <lift:surround with="default" at="content">
-
   <div class="column span-24">
-    Your accounts:
-    <table>
-      <tr>
-	<th>Name</th>
-	<th>Balance</th>
-	<th>Actions</th>
-      </tr>
-    <lift:Accounts.manage>
-      <account:entry>
-	<tr>
-	  <td><acct:name /></td>
-	  <td><acct:description /></td>
-	  <td><acct:actions /></td>
-	</tr>
-      </account:entry>
-    </lift:Accounts.manage>
-    </table>
-
+    <h3>Your accounts</h3>
+    <div id="entryform">
+      <table>
+        <tr>
+	        <th>Account Name</th>
+	        <th>Description</th>
+	        <th>Actions</th>
+        </tr>
+        <lift:Accounts.manage>
+        <account:entry>
+	      <tr>
+	        <td><acct:name /></td>
+	        <td><acct:description /></td>
+	        <td><acct:actions /></td>
+	      </tr>
+        </account:entry>
+        </lift:Accounts.manage>
+      </table>
+      </div>
     <br />
 
-    <a href="/editAcct">Add Account</a>
+    <h3><a href="/editAcct">Do you need to add an Account?</a></h3>
   </div>
 
 </lift:surround>

@@ -27,6 +27,18 @@ color: white;
 
 }
 
+#formBox { 
+color: white;
+  background: #60a8c0;
+  border-top: 3px solid #2E7D9C;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-size: 160%;
+
+}
+
+
+
 #menu {
   background:#FFFFDD none repeat scroll 0 0;
   color:#D66000;
@@ -36,7 +48,7 @@ color: white;
 
 .menuitem {
   display: inline;
-  padding-right: 5px;
+  padding-right: 10px;
 }
 
 .bordered {
@@ -91,3 +103,11 @@ margin-bottom: 15px;
   padding: 2px;
   display: inline;
 }
+
+
+th {
+  background-color: #FFFFFF;
+color: #000000;
+
+}
+

@@ -8,8 +8,8 @@
     <title>PocketChange: where did my money go?</title>
     <lift:CSS.blueprint />
     <lift:CSS.fancyType />
-    <script id="jquery" src="/classpath/jquery.js" type="text/javascript"/>
-    <script id="json" src="/classpath/json.js" type="text/javascript"/>
+    <script id="jquery" src="/classpath/jquery.js" type="text/javascript"></script>
+    <script id="json" src="/classpath/json.js" type="text/javascript"></script>
     <link href="/style/pca.css" type="text/css" rel="stylesheet" media="screen, projection" />
 
   </head>
@@ -49,9 +49,11 @@
       </div>
 
       <script>
-        $(".noticeBox").click(function(){$(this).fadeOut("slow");});
-        $(".errorBox").click(function(){$(this).fadeOut("slow");});
-        $(".warningBox").click(function(){$(this).fadeOut("slow");});
+        $(document).ready(function() { 
+          $(".noticeBox").click(function(){$(this).fadeOut("slow");});
+          $(".errorBox").click(function(){$(this).fadeOut("slow");});
+          $(".warningBox").click(function(){$(this).fadeOut("slow");});
+        });
       </script>
 
     </div>

@@ -65,14 +65,14 @@ class AddEntry extends StatefulSnippet {
 	}
       }
 
-      bind("e", in, 
-	   "account" -> select(user.editable.map(acct => (acct.id.toString, acct.name)), Empty, id => account = id.toLong),
-	   "dateOf" -> text(Util.slashDate.format(new Date()).toString, date = _) % ("id" -> "entrydate"),
-	   "desc" -> text("Item Description", desc = _),
-	   "value" -> text("Value", value = _),
-	   "tags" -> text(tags, doTagsAndSubmit))
+        bind("e", in, 
+            "account" -> select(user.editable.map(acct => (acct.id.toString, acct.name)), Empty, id => account = id.toLong),
+            "dateOf" -> text("", date = _) % ("id" -> "entrydate") % ("maxlength" -> "10") % ("size" -> "10"),
+            "desc" -> text("", desc = _),
+            "value" -> text("", value = _),
+            "tags" -> text(tags, doTagsAndSubmit))
+      }
+      case _ => Text("")
     }
-    case _ => Text("")
-  }
 }
- 
+
