@@ -26,15 +26,15 @@ object Charting {
   private def width = Util.getIntParam("width", 800)
   private def height = Util.getIntParam("height", 200)
 
-  private def withAccount (name : String)(f : Account => LiftResponse) : LiftResponse = 
+  private def withAccount (name : String)(f : Account => Box[LiftResponse]) : Box[LiftResponse] = 
     User.currentUser match {
       case Full(user) => {
 	Account.findByName(user, name) match {
 	  case acct :: Nil => f(acct)
-	  case _ => new NotFoundResponse
+	  case _ => Empty
 	}
       }
-      case _ => RedirectResponse("/user_mgt/login") // Must have a user to access accounts
+      case _ => Full(RedirectResponse("/user_mgt/login")) // Must have a user to access accounts
     }
 
   private def returnChartPNG (chart : JFreeChart) = {
@@ -42,10 +42,10 @@ object Charting {
     
     val data = ChartUtilities.encodeAsPNG(image)
 					     
-    InMemoryResponse(data, List("Content-Type" -> "image/png"), Nil, 200)
+    Full(InMemoryResponse(data, List("Content-Type" -> "image/png"), Nil, 200))
   }
 
-  def history (name : String) : LiftResponse = withAccount(name) {
+  def history (name : String) : Box[LiftResponse] = withAccount(name) {
     acct =>
       val entries = Expense.getByAcct(acct, 
 				      Util.getDateParam("start", Util.noSlashDate.parse),
@@ -95,7 +95,7 @@ object Charting {
     tagMap
   }
 
-  def tagpie (name : String) = withAccount(name) { acct =>
+  def tagpie (name : String) : Box[LiftResponse] = withAccount(name) { acct =>
     val dataset = new DefaultPieDataset
 
     val tags = buildTagChartData(acct)
@@ -115,7 +115,7 @@ object Charting {
     returnChartPNG(chart)
   }
     
-  def tagbar (name : String) = withAccount(name) { acct =>
+  def tagbar (name : String) : Box[LiftResponse] = withAccount(name) { acct =>
     val dataset = new DefaultCategoryDataset
 
     val tags = buildTagChartData(acct)

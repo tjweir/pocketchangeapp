@@ -29,12 +29,12 @@ class Boot {
 
     // Custom dispatch for graph generation
     LiftRules.dispatch.append {
-      case Req("graph" :: acctName :: "history" :: Nil, _, _) =>
-	() => Full(Charting.history(acctName))
-      case Req("graph" :: acctName :: "tagpie" :: Nil, _, _) =>
-	() => Full(Charting.tagpie(acctName))
-      case Req("graph" :: acctName :: "tagbar" :: Nil, _, _) =>
-	() => Full(Charting.tagbar(acctName))
+      case Req(List("graph", acctName, "history"), _, _) =>
+	() => Charting.history(acctName)
+      case Req(List("graph", acctName, "tagpie"), _, _) =>
+	() => Charting.tagpie(acctName)
+      case Req(List("graph", acctName, "tagbar"), _, _) =>
+	() => Charting.tagbar(acctName)
     }
 
     Log.info("Bootstrap up")
