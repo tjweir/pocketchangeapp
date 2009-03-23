@@ -25,6 +25,7 @@ class AddEntry extends StatefulSnippet {
   var desc = ""
   var value = ""
   var tags = S.param("tag") openOr ""
+  var fileHolder : FileParamHolder = _
   
   def add(in: NodeSeq): NodeSeq = User.currentUser match {
     case Full(user) if user.editable.size > 0 => {
@@ -50,8 +51,22 @@ class AddEntry extends StatefulSnippet {
 	           .description(desc).amount(BigDecimal(value)).tags(tags)
 		   .currentBalance(entryBalance + amount)
 
-	  e.validate match {
-            case Nil => {
+	  // Add the optional receipt if it's the correct type
+	  val receiptOk = 
+	    if (fileHolder != null) {
+	      if (fileHolder.mimeType.startsWith("image/")) {
+		e.receipt(fileHolder.file).receiptMime(fileHolder.mimeType)
+		true
+	      } else {
+		S.error("Invalid receipt attachment")
+		false
+	      }
+	    } else {
+	      true 
+	    }
+
+	  (e.validate,receiptOk) match {
+            case (Nil,true) => {
 	      Expense.updateEntries(entrySerial + 1, amount)
               e.save
   	      val acct = Account.find(account).open_!
@@ -60,7 +75,7 @@ class AddEntry extends StatefulSnippet {
               notice("Entry added!")
 	      unregisterThisSnippet() // dpp: remove the statefullness of this snippet
 	    }
-            case x => error(x)
+            case (x,_) => error(x)
 	  }
 	}
       }
@@ -70,6 +85,7 @@ class AddEntry extends StatefulSnippet {
             "dateOf" -> text("", date = _) % ("id" -> "entrydate") % ("maxlength" -> "10") % ("size" -> "10"),
             "desc" -> text("", desc = _),
             "value" -> text("", value = _),
+	     "receipt" -> fileUpload(fileHolder = _),
             "tags" -> text(tags, doTagsAndSubmit))
       }
       case _ => Text("")

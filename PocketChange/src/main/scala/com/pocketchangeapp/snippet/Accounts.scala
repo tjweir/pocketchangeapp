@@ -142,9 +142,16 @@ class Accounts {
     }
 
     filtered.flatMap({ entry =>
+      val desc  = 
+	if (entry.receipt.is != null) {
+	  Text(entry.description.is + " ") ++ <a href={ "/image/" + entry.id }>View receipt</a>
+	} else {
+	  Text(entry.description.is)
+	}
+	
       bind("entry", chooseTemplate("acct", "tableEntry", template),
 	   "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
-	   "desc" -> Text(entry.description.is),
+	   "desc" -> desc,
 	   "tags" -> Text(entry.tags.map(_.name.is).mkString(", ")),
 	   "amt" -> Text(entry.amount.toString),
 	   "balance" -> Text(entry.currentBalance.toString))

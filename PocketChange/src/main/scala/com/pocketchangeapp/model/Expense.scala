@@ -39,6 +39,9 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
     override def textareaRows = 8
   }
 
+  object receipt extends MappedBinary(this)
+  object receiptMime extends MappedString(this,100)
+
   private object _dbTags extends HasManyThrough(this, Tag, ExpenseTag, ExpenseTag.expense, ExpenseTag.tag)
 
   private[model] var _tags : List[Tag] = _
@@ -63,6 +66,11 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   def showTags = Text(tags.map(_.name.is).mkString(", "))
+
+  def owner = account.obj match {
+    case Full(acct) => acct.owner.obj
+    case Empty => Empty
+  }
 
   override def equals (other : Any) = other match {
     case e : Expense if e.id.is == this.id.is => true
