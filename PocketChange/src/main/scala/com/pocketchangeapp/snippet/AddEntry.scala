@@ -25,7 +25,7 @@ class AddEntry extends StatefulSnippet {
   var desc = ""
   var value = ""
   var tags = S.param("tag") openOr ""
-  var fileHolder : FileParamHolder = _
+  var fileHolder : Box[FileParamHolder] = Empty
   
   def add(in: NodeSeq): NodeSeq = User.currentUser match {
     case Full(user) if user.editable.size > 0 => {
@@ -45,26 +45,24 @@ class AddEntry extends StatefulSnippet {
 	  // We need to determine the last serial number and balance for the date in question
 	  val (entrySerial,entryBalance) = Expense.getLastExpenseData(currentAccount, entryDate)
 
-	  println("Last entry = " + (entrySerial, entryBalance))
-	  
 	  val e = Expense.create.account(account).dateOf(entryDate).serialNumber(entrySerial + 1)
 	           .description(desc).amount(BigDecimal(value)).tags(tags)
 		   .currentBalance(entryBalance + amount)
 
 	  // Add the optional receipt if it's the correct type
-	  val receiptOk = 
-	    if (fileHolder != null) {
-	      if (fileHolder.mimeType.startsWith("image/")) {
-		e.receipt(fileHolder.file).receiptMime(fileHolder.mimeType)
-		true
-	      } else {
-		S.error("Invalid receipt attachment")
-		false
-	      }
-	    } else {
-	      true 
+	  val receiptOk = fileHolder match {
+	    case Full(FileParamHolder(_, mime, _, data)) 
+		      if mime.startsWith("image/") => {
+			e.receipt(data).receiptMime(mime)
+			true
+		      }
+	    case Full(_) => {
+	      S.error("Invalid receipt attachment")
+	      false
 	    }
-
+	    case _ => true
+	  }
+	      
 	  (e.validate,receiptOk) match {
             case (Nil,true) => {
 	      Expense.updateEntries(entrySerial + 1, amount)
@@ -85,7 +83,7 @@ class AddEntry extends StatefulSnippet {
             "dateOf" -> text("", date = _) % ("id" -> "entrydate") % ("maxlength" -> "10") % ("size" -> "10"),
             "desc" -> text("", desc = _),
             "value" -> text("", value = _),
-	     "receipt" -> fileUpload(fileHolder = _),
+	     "receipt" -> fileUpload(fph => fileHolder = Full(fph)),
             "tags" -> text(tags, doTagsAndSubmit))
       }
       case _ => Text("")
