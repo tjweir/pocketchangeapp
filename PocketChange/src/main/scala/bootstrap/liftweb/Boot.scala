@@ -8,12 +8,8 @@ import Helpers._
 import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
-<<<<<<< HEAD:PocketChange/src/main/scala/bootstrap/liftweb/Boot.scala
 import com.pocketchangeapp.api._
-import com.pocketchangeapp.util.Charting
-=======
 import com.pocketchangeapp.util.{Charting,Image}
->>>>>>> 903ae91ab2787aebd9a94a5439a7e39a9386bcdb:PocketChange/src/main/scala/bootstrap/liftweb/Boot.scala
  
 /* Connect Lucene/Compass for search */
 class Boot {
