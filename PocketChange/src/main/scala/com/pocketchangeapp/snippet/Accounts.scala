@@ -156,6 +156,5 @@ class Accounts {
 	   "amt" -> Text(entry.amount.toString),
 	   "balance" -> Text(entry.currentBalance.toString))
 		    })
->>>>>>> 903ae91ab2787aebd9a94a5439a7e39a9386bcdb:PocketChange/src/main/scala/com/pocketchangeapp/snippet/Accounts.scala
   }
 }
