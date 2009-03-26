@@ -142,12 +142,20 @@ class Accounts {
     }
 
     filtered.flatMap({ entry =>
-        bind("entry", chooseTemplate("acct", "tableEntry", template),
-             "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
-             "desc" -> Text(entry.description.is),
-             "tags" -> Text(entry.tags.map(_.name.is).mkString(", ")),
-             "amt" -> Text(entry.amount.toString),
-             "balance" -> Text(entry.currentBalance.toString))
-      })
+     val desc  = 
+	if (entry.receipt.is != null) {
+	  Text(entry.description.is + " ") ++ <a href={ "/image/" + entry.id }>View receipt</a>
+	} else {
+	  Text(entry.description.is)
+	}
+	
+      bind("entry", chooseTemplate("acct", "tableEntry", template),
+	   "date" -> Text(Util.slashDate.format(entry.dateOf.is)),
+	   "desc" -> desc,
+	   "tags" -> Text(entry.tags.map(_.name.is).mkString(", ")),
+	   "amt" -> Text(entry.amount.toString),
+	   "balance" -> Text(entry.currentBalance.toString))
+		    })
+>>>>>>> 903ae91ab2787aebd9a94a5439a7e39a9386bcdb:PocketChange/src/main/scala/com/pocketchangeapp/snippet/Accounts.scala
   }
 }

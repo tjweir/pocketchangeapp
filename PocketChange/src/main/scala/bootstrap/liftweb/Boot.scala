@@ -8,12 +8,20 @@ import Helpers._
 import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
+<<<<<<< HEAD:PocketChange/src/main/scala/bootstrap/liftweb/Boot.scala
 import com.pocketchangeapp.api._
 import com.pocketchangeapp.util.Charting
+=======
+import com.pocketchangeapp.util.{Charting,Image}
+>>>>>>> 903ae91ab2787aebd9a94a5439a7e39a9386bcdb:PocketChange/src/main/scala/bootstrap/liftweb/Boot.scala
  
 /* Connect Lucene/Compass for search */
 class Boot {
   def boot {
+    LiftRules.early.append {
+      _.setCharacterEncoding("UTF-8")
+    }
+
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
     LiftRules.addToPackages("com.pocketchangeapp")     
     Schemifier.schemify(true, Log.infoF _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Expense, ExpenseTag)
@@ -30,7 +38,7 @@ class Boot {
 	RewriteResponse("viewAcct" :: Nil, Map("name" -> urlDecode(acctName), "tag" -> urlDecode(tag)))
     }
 
-    // Custom dispatch for graph generation
+    // Custom dispatch for graph and receipt image generation
     LiftRules.dispatch.append {
       case Req(List("graph", acctName, "history"), _, _) =>
 	() => Charting.history(acctName)
@@ -38,6 +46,8 @@ class Boot {
 	() => Charting.tagpie(acctName)
       case Req(List("graph", acctName, "tagbar"), _, _) =>
 	() => Charting.tagbar(acctName)
+      case Req(List("image", expenseId), _, _) =>
+	() => Full(Image.viewImage(expenseId))
     }
 
     Log.info("Bootstrap up")
