@@ -13,6 +13,10 @@ import _root_.scala.xml.Text
 import _root_.net.liftweb.util.Helpers._
 import _root_.net.liftweb.util.{Box,Empty,Full}
 
+import scala.xml.NodeSeq
+
+import java.text.SimpleDateFormat
+
 import com.pocketchangeapp.util.Util
 
 class Expense extends LongKeyedMapper[Expense] with IdPK {
@@ -63,6 +67,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   def showTags = Text(tags.map(_.name.is).mkString(", "))
+  def showXMLTags: NodeSeq = tags.map(t => <tag>{t.name.is}</tag>)
+  def showJSONTags: String = tags.map(t => {"'" + t.name.is + "'" }).mkString(", ") 
 
   override def equals (other : Any) = other match {
     case e : Expense if e.id.is == this.id.is => true
@@ -70,6 +76,71 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   override def hashCode = this.id.is.hashCode
+
+  private def getAccountName(id: Long): String = {
+    Account.find(By(Account.id, id)) match {
+      case Empty => "No Account Name"
+      case Full(a) => a.name.is
+    }
+  }
+
+  def toXML: NodeSeq = {
+   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
+   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+   val edate = formatter.format(this.dateOf.is)
+
+    <expense>
+      <id>{id}</id>
+      <accountname>{getAccountName(account.is)}</accountname>
+      <date>{edate}</date>
+      <description>{description.is}</description>
+      <amount>{amount.is.toString}</amount>
+      <tags>
+        {showXMLTags}
+      </tags>
+    </expense>
+  }
+
+
+  /* Atom requires either an entry or feed to have:
+   - title
+   - lastupdated
+   - uid
+  */
+  def toAtom = {
+   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
+   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+   val edate = formatter.format(this.dateOf.is)
+
+   <entry xmlns="http://www.w3.org/2005/Atom">
+    <expense>
+      <id>{id}</id>
+      <accountname>{getAccountName(account.is)}</accountname>
+      <date>{edate}</date>
+      <description>{description.is}</description>
+      <amount>{amount.is.toString}</amount>
+      <tags>
+        {showXMLTags}
+      </tags>
+     </expense>
+    </entry>
+  }
+
+
+  def toJSON = {
+   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
+   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+   val edate = formatter.format(this.dateOf.is)
+
+   "{'expense':{ 'id':'" + id + "','accountname':'" + getAccountName(account.is) + "'," +
+   "'date':'" + edate + "'," +
+   "'description':'" + description.is + "'," +
+   "'amount':'" + amount.is.toString + "'," +
+   "'tags': {[" + showJSONTags + "]}"
+  }
+
+
+
 }
 
 object Expense extends Expense with LongKeyedMetaMapper[Expense] {
@@ -99,11 +170,13 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
     }
     
     val entryOrder : QueryParam[Expense] = order openOr OrderBy(Expense.serialNumber, Descending)
-      
+
+
     Expense.findAll((By(Expense.account, account.id) :: dateClause :: entryOrder :: params.toList).toSeq : _*)
   }
 
   
+
   // returns the serial and balance of the last entry before this one
   def getLastExpenseData (acct : Account, date : Date) : (Long,BigDecimal) = {
     // Find the last entry on or before the given date
@@ -139,6 +212,7 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
 	}
     }
   }
+
 }
   
 class ExpenseTag extends LongKeyedMapper[ExpenseTag] with IdPK {

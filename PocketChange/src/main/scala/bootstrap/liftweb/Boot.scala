@@ -8,6 +8,7 @@ import Helpers._
 import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
+import com.pocketchangeapp.api._
 import com.pocketchangeapp.util.Charting
  
 /* Connect Lucene/Compass for search */
@@ -18,6 +19,8 @@ class Boot {
     Schemifier.schemify(true, Log.infoF _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Expense, ExpenseTag)
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
+
+    LiftRules.dispatch.prepend(RestAPI.dispatch)
 
     // Set up some rewrites
     LiftRules.rewrite.append {
