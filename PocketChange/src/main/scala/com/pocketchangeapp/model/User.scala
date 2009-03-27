@@ -2,7 +2,7 @@ package com.pocketchangeapp.model
 
 import _root_.net.liftweb.mapper._
 import DB._
-import net.liftweb.util._
+import _root_.net.liftweb.util._
 import _root_.java.sql.Connection
 
 /**
@@ -11,6 +11,7 @@ import _root_.java.sql.Connection
 object User extends User with MetaMegaProtoUser[User] {
   override def dbTableName = "users" // define the DB table name
   
+  // Just for testing purposes. In production we remove this
   override def skipEmailValidation = true
 
   // Spruce up the forms a bit
