@@ -22,7 +22,17 @@
       </div>
 
       <div class="column span-24" id="menu">
-        <lift:Menu.builder li:class="menuitem" />	
+        <!--<lift:Menu.builder li:class="menuitem" />	
+        
+          li:class="menuitem" 
+          li_item:class="selectedMenu"
+          li_item:onclick="javascript:alert('Already selected!');" 
+        -->
+        <lift:Menu.builder 
+          li:class="menuitem" 
+          li_item:id="selectedMenu"
+
+          />
       </div>
 
       <div class="column span-24">

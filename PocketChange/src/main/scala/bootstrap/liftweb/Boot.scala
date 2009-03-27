@@ -57,6 +57,7 @@ object MenuInfo {
     Menu(Loc("manageAccts", List("manage"), "Manage Accounts", IfLoggedIn)) :: 
     Menu(Loc("addAcct", List("editAcct"), "Add Account", Hidden, IfLoggedIn)) ::
     Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)) ::
+    Menu(Loc("help", List("help", "index"), "Help")) ::
     User.sitemap
 }
 
