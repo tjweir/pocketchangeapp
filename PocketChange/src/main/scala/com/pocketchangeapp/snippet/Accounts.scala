@@ -167,8 +167,7 @@ object Accounts {
 	      e.receipt(data).receiptMime(mime)
 	      true
 	    }
-	  case Full(x) => {
-	    println("FPH = " + x + ", size = " + x.file.size)
+	  case Full(x) if x.file.size > 0 => {
 	    error("Invalid receipt attachment")
 	    false
 	  }
