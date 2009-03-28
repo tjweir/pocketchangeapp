@@ -35,7 +35,8 @@ class Accounts {
     User.currentUser.map({user =>
         user.accounts.flatMap({acct =>
             bind("acct", chooseTemplate("account", "entry", xhtml),
-                 "name" -> Text(acct.name.is),
+                 "name" -> (Text(acct.name.is) ++ 
+		 <a href={"/acct/" + acct.stringId.is}>Permanent URL</a>),
                  "description" -> Text(acct.description.is),
                  "actions" -> { link("/manage", () => acct.delete_!, Text("Delete")) ++ Text(" ") ++
                                link("/editAcct", () => currentAccountVar(acct), Text("Edit")) })
@@ -86,7 +87,7 @@ class Accounts {
               val tag = S.param("tag")
 
               // Ajax utility methods. Defined here to capture the closure vars defined above
-              def entryTable = buildExpenseTable(Expense.getByAcct(acct, startDate, endDate, Empty), tag, xhtml)
+              def entryTable = Accounts.buildExpenseTable(Expense.getByAcct(acct, startDate, endDate, Empty), tag, xhtml)
 
               def updateGraph() = {
                 val dateClause : String = if (startDate.isDefined || endDate.isDefined) {
@@ -134,6 +135,68 @@ class Accounts {
     case _ => Text("No account name provided")
   }
 
+}
+
+object Accounts {
+  // Define this in one place so that various snippets can use it
+  def addEntry(acctId : Long, value : String, date : String, tags : String,
+	       desc : String, receipt : Box[FileParamHolder]) : Boolean = {
+    if (tags.trim.length == 0) {
+      error("We're going to need at least one tag."); false
+    } else {
+      /* Get the date correctly, comes in as yyyy/mm/dd */
+      val entryDate = Util.slashDate.parse(date)
+
+      val amount = BigDecimal(value)
+
+      Account.find(acctId).map({ currentAccount =>
+        // We need to determine the last serial number and balance
+	// for the date in question
+        val (entrySerial,entryBalance) = 
+	  Expense.getLastExpenseData(currentAccount, entryDate)
+				
+        val e = Expense.create.account(currentAccount).dateOf(entryDate)
+	          .serialNumber(entrySerial + 1)
+	          .description(desc).amount(BigDecimal(value)).tags(tags)
+		  .currentBalance(entryBalance + amount)
+
+	// Add the optional receipt if it's the correct type
+	val receiptOk = receipt match {
+	  case Full(FileParamHolder(_, mime, _, data)) 
+	    if mime.startsWith("image/") => {
+	      e.receipt(data).receiptMime(mime)
+	      true
+	    }
+	  case Full(x) => {
+	    println("FPH = " + x + ", size = " + x.file.size)
+	    error("Invalid receipt attachment")
+	    false
+	  }
+	  case _ => true
+	}
+	      
+	(e.validate,receiptOk) match {
+          case (Nil,true) => {
+	    Expense.updateEntries(entrySerial + 1, amount)
+            e.save
+	    val newBalance = currentAccount.balance.is + e.amount.is
+	    currentAccount.balance(newBalance).save
+            notice("Entry added!")
+	    true
+	  }
+          case (x,_) => error(x); false
+	}
+      }) openOr { 
+	error("Could not locate the account"); false 
+      }
+    }
+  }
+
+  // Custom snippets
+  def show(entries : List[Expense])(xhtml : NodeSeq) : NodeSeq = {
+    bind("acct", xhtml, "table" -> buildExpenseTable(entries, Empty, xhtml))
+  }
+
   // Utility methods
   def buildExpenseTable(entries : List[Expense], tag : Box[String], template : NodeSeq) = {
     val filtered = tag match {
@@ -156,5 +219,5 @@ class Accounts {
 	   "amt" -> Text(entry.amount.toString),
 	   "balance" -> Text(entry.currentBalance.toString))
 		    })
-  }
+  }  
 }

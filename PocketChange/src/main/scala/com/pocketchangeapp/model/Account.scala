@@ -16,11 +16,13 @@ class Account extends LongKeyedMapper[Account] with IdPK {
     override def dbIndexed_? = true
   }
 
+  object stringId extends MappedUniqueId(this,32)
+
   def admins = AccountAdmin.findAll(By(AccountAdmin.account, this.id))
 
   def addAdmin (user : User) = AccountAdmin.create.account(this).administrator(user).save
 
-  def viewers = AccountViewer.findAll(By(AccountViewer.account, this.id))
+  def viewers : List[AccountViewer] = AccountViewer.findAll(By(AccountViewer.account, this.id))
 
   object is_public extends MappedBoolean(this) {
     override def defaultValue = false

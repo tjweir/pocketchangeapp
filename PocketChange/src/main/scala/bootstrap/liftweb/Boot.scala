@@ -9,7 +9,7 @@ import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionI
 import java.sql.{Connection, DriverManager}
 import com.pocketchangeapp.model._
 import com.pocketchangeapp.api._
-import com.pocketchangeapp.util.{Charting,Image}
+import com.pocketchangeapp.util.{AccountLoc,Charting,Image}
  
 /* Connect Lucene/Compass for search */
 class Boot {
@@ -58,6 +58,7 @@ object MenuInfo {
     Menu(Loc("addAcct", List("editAcct"), "Add Account", Hidden, IfLoggedIn)) ::
     Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)) ::
     Menu(Loc("help", List("help", "index"), "Help")) ::
+    Menu(AccountLoc) ::
     User.sitemap
 }
 

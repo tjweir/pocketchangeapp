@@ -75,7 +75,7 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
 
   def owner = account.obj match {
     case Full(acct) => acct.owner.obj
-    case Empty => Empty
+    case _ => Empty
   }
 
   override def equals (other : Any) = other match {
@@ -87,8 +87,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
 
   private def getAccountName(id: Long): String = {
     Account.find(By(Account.id, id)) match {
-      case Empty => "No Account Name"
       case Full(a) => a.name.is
+      case _ => "No Account Name"
     }
   }
 
