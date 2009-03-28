@@ -16,14 +16,19 @@ import _root_.com.pocketchangeapp.snippet.Accounts
 
 // Define the type-safe case classes for the Loc to use
 abstract class AccountInfo
-case object NoSuchAccountInfo extends AccountInfo
+case object NoSuchAccount extends AccountInfo
+case object NotPublic extends AccountInfo
 case class FullAccountInfo(account : Account, entries : List[Expense]) extends AccountInfo
 
 // The new Loc class that we'll use to control access
 object AccountLoc extends Loc[AccountInfo] {
-  // Default impls
-  def defaultParams = Empty
+  // Default to "not here"
+  def defaultParams = Full(NoSuchAccount)
+  
+  // We don't want to show this page in the menu
   def params = List(Hidden)
+  
+  // Required to provide the next three (abstract), but not used
   val link = new Link[AccountInfo](List("account"))
   val name = "Account"
   val text = LinkText[AccountInfo](ignore => Text("Account"))
@@ -32,13 +37,17 @@ object AccountLoc extends Loc[AccountInfo] {
   override def rewrite = Full({
     case RewriteRequest(ParsePath(List("acct", aid), _, _, _), _, _) => {
       Account.findAll(By(Account.stringId, aid)) match {
-	case List(account) => {
+	case List(account) if account.public.is => {
 	  (RewriteResponse("account" :: Nil), 
 	   FullAccountInfo(account, account.entries))
 	}
+	case List(account) => {
+	  (RewriteResponse("account" :: Nil), 
+	   NotPublic)
+	}	  
 	case _ => {
 	  (RewriteResponse("account" :: Nil),
-	   NoSuchAccountInfo)
+	   NoSuchAccount)
 	}
       }
     }
@@ -52,10 +61,12 @@ object AccountLoc extends Loc[AccountInfo] {
 
   // Define snippet behavior based on the param
   override def snippets = {
-    case ("entries", Full(NoSuchAccountInfo)) => {ignore : NodeSeq => 
+    case ("entries", Full(NoSuchAccount)) => {ignore : NodeSeq => 
       Text("Could not locate the requested account")}
+    case ("entries", Full(NotPublic)) => {ignore : NodeSeq => 
+      Text("This account is not publicly viewable")}
     case ("entries", Full(FullAccountInfo(account, List()))) => {ignore : NodeSeq =>
-	Text("No entries for " + account.name.is)}
+      Text("No entries for " + account.name.is)}
     case ("entries", Full(FullAccountInfo(account, entries))) => 
       Accounts.show(entries) _
   }

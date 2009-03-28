@@ -6,6 +6,8 @@
         <tr>
 	        <th>Account Name</th>
 	        <th>Description</th>
+		<th>Public?</th>
+		<th>Public URL</th>
 	        <th>Actions</th>
         </tr>
         <lift:Accounts.manage>
@@ -13,6 +15,8 @@
 	      <tr>
 	        <td><acct:name /></td>
 	        <td><acct:description /></td>
+		<td><acct:public_control /></td>
+		<td><acct:public_url /></td>
 	        <td><acct:actions /></td>
 	      </tr>
         </account:entry>

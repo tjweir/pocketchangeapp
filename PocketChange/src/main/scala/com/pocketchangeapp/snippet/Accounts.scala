@@ -32,16 +32,24 @@ class Accounts {
       acct.delete_!
     }
 
+    def setPublic(acct : Account)(value : Boolean) = {
+      acct.public(value).save
+      JsCmds.Noop
+    }
+
     User.currentUser.map({user =>
-        user.accounts.flatMap({acct =>
-            bind("acct", chooseTemplate("account", "entry", xhtml),
-                 "name" -> (Text(acct.name.is) ++ 
-		 <a href={"/acct/" + acct.stringId.is}>Permanent URL</a>),
-                 "description" -> Text(acct.description.is),
-                 "actions" -> { link("/manage", () => acct.delete_!, Text("Delete")) ++ Text(" ") ++
-                               link("/editAcct", () => currentAccountVar(acct), Text("Edit")) })
+      user.accounts.flatMap({acct =>
+        bind("acct", chooseTemplate("account", "entry", xhtml),
+             "name" -> Text(acct.name.is),
+	     "public_control" -> ajaxCheckbox(acct.public.is, setPublic(acct) _),
+	     "public_url" -> <a href={"/acct/" + acct.stringId.is}>Permanent URL</a>,
+             "description" -> Text(acct.description.is),
+             "actions" -> { 
+	       link("/manage", () => acct.delete_!, Text("Delete")) ++ Text(" ") ++
+               link("/editAcct", () => currentAccountVar(acct), Text("Edit"))
+	     })
           })
-			}) openOr Text("You're not logged in")
+    }) openOr Text("You're not logged in")
   }
 
   object currentAccountVar extends RequestVar[Account]({

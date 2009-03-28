@@ -16,8 +16,6 @@ class Account extends LongKeyedMapper[Account] with IdPK {
     override def dbIndexed_? = true
   }
 
-  object stringId extends MappedUniqueId(this,32)
-
   def admins = AccountAdmin.findAll(By(AccountAdmin.account, this.id))
 
   def addAdmin (user : User) = AccountAdmin.create.account(this).administrator(user).save
@@ -42,6 +40,10 @@ class Account extends LongKeyedMapper[Account] with IdPK {
   object externalAccount extends MappedString(this, 300)
 
   def notes = AccountNote.findAll(By(AccountNote.account, this.id))
+
+  // New attributes for public viewing
+  object public extends MappedBoolean(this)
+  object stringId extends MappedUniqueId(this,32)
 }
 
 object Account extends Account with LongKeyedMetaMapper[Account] {

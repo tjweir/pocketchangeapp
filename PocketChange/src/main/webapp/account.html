@@ -1,9 +1,6 @@
 <lift:surround with="default" at="content">
-<head>
-  <title><lift:Menu.title /></title>
-</head>
 <lift:entries  eager_eval="true">
-  <h1>Entries</h1>
+  <h1><lift:Menu.title /></h1>
   <lift:embed what="entry_table" />
 </lift:entries>
 </lift:surround>
