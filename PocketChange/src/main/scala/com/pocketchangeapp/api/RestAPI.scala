@@ -81,6 +81,7 @@ object RestAPI extends XMLApiHelper{
   // reacts to the PUT Request
   def addExpense(req: Req): LiftResponse = {
     var tempEmail = ""
+    var tempPass = ""
     var tempAccountName = ""
 
     var expense = new Expense
@@ -88,6 +89,7 @@ object RestAPI extends XMLApiHelper{
       case Full(<expense>{parameters @ _*}</expense>) => {
         for(parameter <- parameters){ parameter match {
           case <email>{email}</email> => tempEmail = email.text
+          case <password>{password}</password> => tempPass = password.text
           case <accountName>{name}</accountName> => tempAccountName = name.text
           case <dateOf>{dateof}</dateOf> => expense.dateOf(new java.util.Date(dateof.text))
           case <amount>{value}</amount> => expense.amount(BigDecimal(value.text))
@@ -97,7 +99,14 @@ object RestAPI extends XMLApiHelper{
       }
 
       try {
-        val currentAccount = getAccount(tempEmail, tempAccountName)
+        val u:User = User.find(By(User.email, tempEmail)) match {
+          case Full(user) if user.validated && user.password.match_?(tempPass) =>
+            User.logUserIn(user)
+            user
+          case _ => new User
+        }
+
+        val currentAccount = Account.find(By(Account.owner, u.id.is), By(Account.name, tempAccountName)).open_!
         expense.account(currentAccount.id.is)
 
         val (entrySerial,entryBalance) = Expense.getLastExpenseData(currentAccount, expense.dateOf)
