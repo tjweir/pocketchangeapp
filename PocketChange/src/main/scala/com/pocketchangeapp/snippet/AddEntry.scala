@@ -80,7 +80,7 @@ class AddEntry extends StatefulSnippet {
 
         bind("e", in, 
             "account" -> select(user.editable.map(acct => (acct.id.toString, acct.name)), Empty, id => account = id.toLong),
-            "dateOf" -> text("", date = _) % ("id" -> "entrydate") % ("maxlength" -> "10") % ("size" -> "10"),
+            "dateOf" -> text("", date = _) % ("size" -> "10"),
             "desc" -> text("", desc = _),
             "value" -> text("", value = _),
 	     "receipt" -> fileUpload(fph => fileHolder = Full(fph)),
