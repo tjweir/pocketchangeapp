@@ -37,7 +37,7 @@ object AccountLoc extends Loc[AccountInfo] {
   override def rewrite = Full({
     case RewriteRequest(ParsePath(List("acct", aid), _, _, _), _, _) => {
       Account.findAll(By(Account.stringId, aid)) match {
-	case List(account) if account.public.is => {
+	case List(account) if account.is_public.is => {
 	  (RewriteResponse("account" :: Nil), 
 	   FullAccountInfo(account, account.entries))
 	}

@@ -41,8 +41,7 @@ class Account extends LongKeyedMapper[Account] with IdPK {
 
   def notes = AccountNote.findAll(By(AccountNote.account, this.id))
 
-  // New attributes for public viewing
-  object public extends MappedBoolean(this)
+  // New attribute for public viewing
   object stringId extends MappedUniqueId(this,32)
 }
 

@@ -33,7 +33,7 @@ class Accounts {
     }
 
     def setPublic(acct : Account)(value : Boolean) = {
-      acct.public(value).save
+      acct.is_public(value).save
       JsCmds.Noop
     }
 
@@ -41,7 +41,7 @@ class Accounts {
       user.accounts.flatMap({acct =>
         bind("acct", chooseTemplate("account", "entry", xhtml),
              "name" -> Text(acct.name.is),
-	     "public_control" -> ajaxCheckbox(acct.public.is, setPublic(acct) _),
+	     "public_control" -> ajaxCheckbox(acct.is_public.is, setPublic(acct) _),
 	     "public_url" -> <a href={"/acct/" + acct.stringId.is}>Permanent URL</a>,
              "description" -> Text(acct.description.is),
              "actions" -> { 
