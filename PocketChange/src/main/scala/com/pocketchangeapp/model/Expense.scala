@@ -13,7 +13,7 @@ import _root_.scala.xml.Text
 import _root_.net.liftweb.util.Helpers._
 import _root_.net.liftweb.util.{Box,Empty,Full}
 
-import scala.xml.NodeSeq
+import scala.xml.{NodeSeq,Text}
 
 import java.text.SimpleDateFormat
 
@@ -25,6 +25,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   object account extends MappedLongForeignKey(this, Account) {
     override def dbIndexed_? = true
   }
+
+  def accountName = Text("My account is " + account.obj.map(acct => acct.name.is).openOr("unknown"))
 
   object dateOf extends MappedDateTime(this)
 
@@ -75,7 +77,7 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
 
   def owner = account.obj match {
     case Full(acct) => acct.owner.obj
-    case Empty => Empty
+    case _ => Empty
   }
 
   override def equals (other : Any) = other match {
@@ -87,8 +89,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
 
   private def getAccountName(id: Long): String = {
     Account.find(By(Account.id, id)) match {
-      case Empty => "No Account Name"
       case Full(a) => a.name.is
+      case _ => "No Account Name"
     }
   }
 
