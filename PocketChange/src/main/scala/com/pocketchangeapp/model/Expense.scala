@@ -15,7 +15,7 @@ import _root_.net.liftweb.util.{Box,Empty,Full}
 
 import scala.xml.{NodeSeq,Text}
 
-import java.text.SimpleDateFormat
+import _root_.java.text.{DateFormat,SimpleDateFormat}
 
 import com.pocketchangeapp.util.Util
 
@@ -28,7 +28,11 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
 
   def accountName = Text("My account is " + account.obj.map(acct => acct.name.is).openOr("unknown"))
 
-  object dateOf extends MappedDateTime(this)
+  object dateOf extends MappedDateTime(this) {
+    final val dateFormat = 
+      DateFormat.getDateInstance(DateFormat.SHORT)
+    override def asHtml = Text(dateFormat.format(is))
+  }
 
   object serialNumber extends MappedLong(this)
 
@@ -70,6 +74,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
     _tags = newTags
     this
   }
+
+  def tagsToo : List[Tag] = ExpenseTag.findAll(By(ExpenseTag.expense, this.id)).map(_.tag.obj.open_!)
 
   def showTags = Text(tags.map(_.name.is).mkString(", "))
   def showXMLTags: NodeSeq = tags.map(t => <tag>{t.name.is}</tag>)

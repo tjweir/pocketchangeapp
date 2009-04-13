@@ -87,11 +87,13 @@
       <version>[6.1.12.rc5,)</version>
       <scope>test</scope>
     </dependency>
+    <!-- optional if you want PostgreSQL
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>8.1-404.jdbc3</version>
     </dependency> 
+    -->
     <!-- for LiftConsole -->
     <dependency>
       <groupId>org.scala-lang</groupId>

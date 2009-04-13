@@ -64,8 +64,8 @@ object MenuInfo {
 object DBVendor extends ConnectionManager {
   def newConnection(name: ConnectionIdentifier): Box[Connection] = {
     try {
-      Class.forName("org.postgresql.Driver")
-      val dm = DriverManager.getConnection("jdbc:postgresql://localhost/pca", "pca", "pca")
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver")
+      val dm = DriverManager.getConnection("jdbc:derby:pca_example;create=true")
       Full(dm)
     } catch {
       case e : Exception => e.printStackTrace; Empty
