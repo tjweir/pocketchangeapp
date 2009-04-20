@@ -51,6 +51,7 @@ class AddEntry extends StatefulSnippet {
 
 	  // Add the optional receipt if it's the correct type
 	  val receiptOk = fileHolder match {
+      case Full(FileParamHolder(_, null, _, _)) => true
 	    case Full(FileParamHolder(_, mime, _, data)) 
 		      if mime.startsWith("image/") => {
 			e.receipt(data).receiptMime(mime)
