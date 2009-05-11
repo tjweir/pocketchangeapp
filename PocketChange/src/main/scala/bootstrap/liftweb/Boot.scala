@@ -46,6 +46,9 @@ class Boot {
 	() => Full(Image.viewImage(expenseId))
     }
 
+    import scala.xml.Text
+    val m = Title(if (User.loggedIn_?) { Text("a") } else { Text("b") })
+
     Log.info("Bootstrap up")
   }
 }
@@ -64,8 +67,14 @@ object MenuInfo {
 object DBVendor extends ConnectionManager {
   def newConnection(name: ConnectionIdentifier): Box[Connection] = {
     try {
+      /** Uncomment if you really want Derby
+       * 
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver")
       val dm = DriverManager.getConnection("jdbc:derby:pca_example;create=true")
+      */
+
+      Class.forName("org.h2.Driver")
+      val dm = DriverManager.getConnection("jdbc:h2:pca_example")
       Full(dm)
     } catch {
       case e : Exception => e.printStackTrace; Empty

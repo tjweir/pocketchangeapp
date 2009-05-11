@@ -125,10 +125,7 @@ class MappedDecimal[T <: Mapper[T]] (val fieldOwner : T, val context : MathConte
   }
   
   /** Set the value along with proper scale, precision, and rounding */
-  protected def setAll (in : BigDecimal) = this.set(coerce(in))
-
-  // Set the scale on the given input
-  protected def coerce (in : BigDecimal) = new BigDecimal(in.bigDecimal.setScale(scale, context.getRoundingMode))
+  protected def setAll (in : BigDecimal) = this.set(new BigDecimal(in.bigDecimal.setScale(scale, context.getRoundingMode)))
 
   def targetSQLType = Types.DECIMAL
 

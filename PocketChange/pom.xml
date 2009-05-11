@@ -36,22 +36,12 @@
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-core</artifactId>
-     <version>1.0</version>
-    </dependency>
-      <dependency>
-      <groupId>net.liftweb</groupId>
-      <artifactId>lift-util</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>net.liftweb</groupId>
-      <artifactId>lift-webkit</artifactId>
-      <version>1.0</version>
+     <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-mapper</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency> 
     <dependency>
       <groupId>jfree</groupId>
@@ -63,12 +53,19 @@
 	  <artifactId>gnujaxp</artifactId>
 	</exclusion>
       </exclusions>
-    </dependency>   
+    </dependency>  
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.1.112</version>
+    </dependency>  
+    <!-- Derby doesn't handle BINARY fields over 32k
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
       <version>10.2.2.0</version>
     </dependency>
+    -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
@@ -87,7 +84,7 @@
       <version>[6.1.12.rc5,)</version>
       <scope>test</scope>
     </dependency>
-    <!-- optional if you want PostgreSQL
+    <!--
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
