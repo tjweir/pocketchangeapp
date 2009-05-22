@@ -152,7 +152,7 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
    "'date':'" + edate + "'," +
    "'description':'" + description.is + "'," +
    "'amount':'" + amount.is.toString + "'," +
-   "'tags': {[" + showJSONTags + "]}"
+   "'tags': [" + showJSONTags + "]}"
   }
 
 
