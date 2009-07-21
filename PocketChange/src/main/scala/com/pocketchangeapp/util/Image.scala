@@ -18,7 +18,7 @@ object Image {
 	      if (e.owner == User.currentUser) {
 		InMemoryResponse(e.receipt.is, List("Content-Type" -> e.receiptMime.is), Nil, 200)
 	      } else {
-		new ForbiddenResponse("You do not have permission to view this receipt.")
+		ForbiddenResponse()
 	      }
 	    }
 	    case _ => PlainTextResponse("No such expense item", Nil, 404)
