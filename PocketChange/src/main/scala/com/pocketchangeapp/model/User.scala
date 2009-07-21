@@ -15,15 +15,8 @@ object User extends User with MetaMegaProtoUser[User] {
   override def skipEmailValidation = true
 
   // Spruce up the forms a bit
-  override def loginXhtml =
-    <lift:surround with="default" at="content">
-      <div id="formBox">{ super.loginXhtml }</div>
-    </lift:surround>
-
-  override def signupXhtml(user: User) = 
-    <lift:surround with="default" at="content">
-      <div id="formBox">{ super.signupXhtml(user) }</div>
-    </lift:surround>
+  override def screenWrap = 
+    Full(<lift:surround with="default" at="content"><div id="formBox"><lift:bind /></div></lift:surround>)
 
   // define the order fields will appear in forms and output
   //override def fieldOrder = id :: firstName :: lastName :: email :: password :: Nil
