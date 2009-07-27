@@ -26,7 +26,7 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
     override def dbIndexed_? = true
   }
 
-  def accountName = Text("My account is " + account.obj.map(acct => acct.name.is).openOr("unknown"))
+  def accountName = Text("My account is " + account.obj.map(_.name.is).openOr("unknown"))
 
   object dateOf extends MappedDateTime(this) {
     final val dateFormat = 
