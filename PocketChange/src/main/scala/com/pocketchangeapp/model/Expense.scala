@@ -173,14 +173,14 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
   def getByAcct (account : Account, startDate : Box[Date], endDate : Box[Date], order : Box[OrderBy[Expense,_]], params : QueryParam[Expense]*) : List[Expense] = {
     // Set up some query parameters
     val dateClause : QueryParam[Expense] = (startDate,endDate) match {
-      case (Full(start), Full(end)) => BySql("Expense.dateOf between ? and ?",
-					     IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+      case (Full(start), Full(end)) => BySql("expense.dateOf between ? and ?",
+					     IHaveValidatedThisSQL("dchenbecker", "2009-10-08"),
 					     start, end)
-      case (Full(start), Empty) => BySql("Expense.dateOf >= ?",
-					 IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+      case (Full(start), Empty) => BySql("expense.dateOf >= ?",
+					 IHaveValidatedThisSQL("dchenbecker", "2009-10-08"),
 					 start)
-      case (Empty, Full(end)) => BySql("Expense.dateOf <= ?",
-				       IHaveValidatedThisSQL("dchenbecker", "2009-02-22"),
+      case (Empty, Full(end)) => BySql("expense.dateOf <= ?",
+				       IHaveValidatedThisSQL("dchenbecker", "2009-10-08"),
 				       end)
       case _ => new Ignore[Expense]
     }
