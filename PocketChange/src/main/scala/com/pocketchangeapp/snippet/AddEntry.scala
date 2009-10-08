@@ -57,7 +57,10 @@ class AddEntry extends StatefulSnippet {
 			e.receipt(data).receiptMime(mime)
 			true
 		      }
-	    case Full(_) => {
+	    // If someone sends nothing...
+	    case Full(FileParamHolder(_, _, "", _)) => true
+	    case Full(something) => {
+	      Log.error("Received file attachment: " + something)
 	      S.error("Invalid receipt attachment")
 	      false
 	    }
