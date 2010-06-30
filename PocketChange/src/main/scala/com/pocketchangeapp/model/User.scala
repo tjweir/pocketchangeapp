@@ -1,9 +1,8 @@
 package com.pocketchangeapp.model
 
-import _root_.net.liftweb.mapper._
-import DB._
-import _root_.net.liftweb.util._
-import _root_.java.sql.Connection
+import net.liftweb.common.Full
+
+import net.liftweb.mapper.{By,MegaProtoUser,MetaMegaProtoUser}
 
 /**
  * The singleton that has methods for accessing the database

@@ -1,23 +1,17 @@
-/**
- Insert copyright boilerplate here
-*/
+package com.pocketchangeapp {
+package model {
 
-package com.pocketchangeapp.model
-
-import _root_.java.math.MathContext
-import _root_.java.util.Date
-
-import _root_.net.liftweb.mapper._
-import _root_.scala.xml.Text
-
-import _root_.net.liftweb.util.Helpers._
-import _root_.net.liftweb.util.{Box,Empty,Full}
+import java.math.MathContext
+import java.text.{DateFormat,SimpleDateFormat}
+import java.util.Date
 
 import scala.xml.{NodeSeq,Text}
 
-import _root_.java.text.{DateFormat,SimpleDateFormat}
+import net.liftweb.common.{Box,Empty,Full}
+import net.liftweb.mapper._
+import net.liftweb.util.Helpers._
 
-import com.pocketchangeapp.util.Util
+import util.Util
 
 class Expense extends LongKeyedMapper[Expense] with IdPK {
   def getSingleton = Expense
@@ -254,3 +248,6 @@ object ExpenseTag extends ExpenseTag with LongKeyedMetaMapper[ExpenseTag] {
 	       Tag.id,
 	       Like(Tag.name, search))).map(_.expense.obj.open_!).removeDuplicates
 }
+
+// Close package statements 
+}}

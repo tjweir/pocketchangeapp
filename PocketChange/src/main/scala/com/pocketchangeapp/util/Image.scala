@@ -1,12 +1,14 @@
-package com.pocketchangeapp.util
+/*
+ * The split package here allows us to reference top-level
+ * PocketChange packages, like model, snippet, etc.
+ */
+package com.pocketchangeapp {
+package util {
 
-import _root_.net.liftweb.http._
-import _root_.net.liftweb.util._
-import _root_.net.liftweb.mapper._
-import S._
-import Helpers._
+import net.liftweb.common.Full
+import net.liftweb.http.{ForbiddenResponse,InMemoryResponse,LiftResponse,PlainTextResponse,RedirectResponse}
 
-import com.pocketchangeapp.model._
+import model.{Expense,User}
 
 object Image {
   def viewImage(id : String) : LiftResponse = 
@@ -30,3 +32,6 @@ object Image {
       case nfe : NumberFormatException => PlainTextResponse("Invalid expense ID", Nil, 400)
     }
 }
+
+// Close package statements
+}}

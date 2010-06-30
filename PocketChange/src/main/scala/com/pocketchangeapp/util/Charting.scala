@@ -1,12 +1,11 @@
-package com.pocketchangeapp.util
-
-import _root_.net.liftweb.http._
-import _root_.net.liftweb.util._
-import _root_.net.liftweb.mapper._
-import S._
-import Helpers._
+package com.pocketchangeapp {
+package util {
 
 import scala.collection.mutable.HashMap
+
+import net.liftweb.common.{Box,Empty,Full}
+import net.liftweb.http.{ForbiddenResponse,InMemoryResponse,LiftResponse,RedirectResponse}
+
 
 import java.io.{PipedInputStream,PipedOutputStream}
 import java.text.DecimalFormat
@@ -19,7 +18,7 @@ import org.jfree.chart.title.TextTitle
 import org.jfree.chart.labels.{StandardCategoryItemLabelGenerator,StandardPieSectionLabelGenerator}
 
 
-import com.pocketchangeapp.model._
+import model.{Account,Expense,User}
 
 object Charting {
   // We're assuming stateful dispatch here
@@ -140,3 +139,5 @@ object Charting {
 }
     
     
+// Close package statements
+}}

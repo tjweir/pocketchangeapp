@@ -1,13 +1,9 @@
-/**
- Insert copyright boilerplate here
-*/
-
 package com.pocketchangeapp.model
 
 import java.math.MathContext
 
+import net.liftweb.common.Empty
 import net.liftweb.mapper._
-import net.liftweb.util.Empty
 
 class Account extends LongKeyedMapper[Account] with IdPK {
   def getSingleton = Account

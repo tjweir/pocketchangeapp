@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.pocketchangeapp</groupId>
   <artifactId>PocketChange</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
   <packaging>war</packaging>
   <name>PocketChangeApp</name>
   <inceptionYear>2008</inceptionYear>
@@ -11,7 +11,8 @@
   <description>A Lift Application to support the Lift Book.</description>
   -->
   <properties>
-    <scala.version>2.7.3</scala.version>
+    <scala.version>2.7.7</scala.version>
+    <lift.version>2.0-SNAPSHOT</lift.version>
   </properties>
 
   <pluginRepositories>
@@ -56,13 +57,13 @@
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-core</artifactId>
-     <version>1.0</version>
+      <artifactId>lift-webkit</artifactId>
+     <version>${lift.version}</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-mapper</artifactId>
-      <version>1.0</version>
+      <version>${lift.version}</version>
     </dependency> 
     <dependency>
       <groupId>jfree</groupId>
@@ -80,13 +81,6 @@
       <artifactId>h2</artifactId>
       <version>1.1.112</version>
     </dependency>  
-    <!-- Derby doesn't handle BINARY fields over 32k
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.2.2.0</version>
-    </dependency>
-    -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>

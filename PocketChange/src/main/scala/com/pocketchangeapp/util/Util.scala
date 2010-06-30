@@ -3,16 +3,8 @@ package com.pocketchangeapp.util
 import java.util.Date
 import java.text.SimpleDateFormat
 
-import scala.xml._
-import net.liftweb._
-import http._
-import util._
-import S._
-import SHtml._
-import scala.xml._
-import Helpers._
-
-import com.pocketchangeapp.model._
+import net.liftweb.common.{Box,Empty,Full}
+import net.liftweb.http.S
 
 object Util {
   val noSlashDate = new SimpleDateFormat("yyyyMMdd")

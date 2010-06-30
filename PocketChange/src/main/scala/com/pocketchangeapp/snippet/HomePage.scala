@@ -1,24 +1,23 @@
-package com.pocketchangeapp.snippet
-
-import scala.xml._
-import net.liftweb.http._
-import net.liftweb.util._
-import S._
-import SHtml._
-import Helpers._
-import scala.xml._
-
-import com.pocketchangeapp.model._
+package com.pocketchangeapp {
+package snippet {
 
 import java.util.Date
 
-class HomePage {
-  val formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
+import scala.xml.{NodeSeq,Text}
 
+import net.liftweb.common.Full
+import net.liftweb.util.Helpers.{bind,chooseTemplate}
+
+import model.User
+
+// Import Helper's implicits for binding
+import net.liftweb.util.Helpers._
+
+class HomePage {
   def summary (xhtml : NodeSeq) : NodeSeq = User.currentUser match {
     case Full(user) => {
       val entries : NodeSeq = user.allAccounts match {
-	case Nil => Text("You have no accounts set up") // Add link to create one...
+	case Nil => Text("You have no accounts set up") // TODO: Add link to create one...
 	case accounts => accounts.flatMap({account => 
 	  bind("acct", chooseTemplate("account", "entry", xhtml),
 	       "name" -> <a href={"/account/" + account.name.is}>{account.name.is}</a>,
@@ -31,3 +30,5 @@ class HomePage {
   }
 }
 
+// Close package statements
+}}
