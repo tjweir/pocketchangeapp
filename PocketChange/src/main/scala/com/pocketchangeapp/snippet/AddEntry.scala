@@ -84,7 +84,7 @@ class AddEntry extends StatefulSnippet {
       }
 
       bind("e", in, 
-           "account" -> SHtml.select(user.editable.map(acct => (acct.id.toString, acct.name)), Empty, id => account = id.toLong),
+           "account" -> SHtml.select(user.editable.map(acct => (acct.id.toString, acct.name.get)), Empty, id => account = id.toLong),
            // Note that we use "-%>" so that the id and maxlength attrs on the template are preserved
            "dateOf" -%> SHtml.text("", date = _) % ("size" -> "10"),
            "desc" -> SHtml.text("", desc = _),

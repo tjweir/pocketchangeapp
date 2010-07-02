@@ -11,8 +11,8 @@
   <description>A Lift Application to support the Lift Book.</description>
   -->
   <properties>
-    <scala.version>2.7.7</scala.version>
-    <lift.version>2.0</lift.version>
+    <scala.version>2.8.0</scala.version>
+    <lift.version>2.1-M1</lift.version>
   </properties>
 
   <pluginRepositories>
@@ -57,12 +57,12 @@
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-webkit</artifactId>
+      <artifactId>lift-webkit_${scala.version}</artifactId>
      <version>${lift.version}</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-mapper</artifactId>
+      <artifactId>lift-mapper_${scala.version}</artifactId>
       <version>${lift.version}</version>
     </dependency> 
     <dependency>
@@ -131,12 +131,7 @@
           </execution>
         </executions>
         <configuration>
-          <scalaVersion>${scala.version}</scalaVersion>
-	  <args>
-            <!-- arg>-unchecked</arg -->
-            <arg>-deprecation</arg>
-            <arg>-Xno-varargs-conversion</arg>
-          </args>
+           <charset>${project.build.sourceEncoding}</charset>
         </configuration>
       </plugin>
       <plugin>
