@@ -15,15 +15,33 @@ import net.liftweb.sitemap.Loc._
 import net.liftweb.util.Helpers._
 
  
-/* Connect Lucene/Compass for search */
+/**
+ * The bootstrap.liftweb.Boot class is the main entry point for Lift.
+ * This is where all of the initial App setup is performed. In particular,
+ * the Boot.boot method is what lift calls after it loads.
+ * 
+ * TODO: Connect Lucene/Compass for search
+ */
 class Boot {
   def boot {
+    /*
+     * LiftRules.early allows us to apply functions to the request before
+     * Lift has started to work with it. In our case, we're explicitly
+     * setting the character encoding to work around an issue with
+     * Jetty not properly discovering the encoding from the client.
+     */
     LiftRules.early.append {
       _.setCharacterEncoding("UTF-8")
     }
 
+    /*
+     * If you're using reflection-based dispatch in Lift, then you need to
+     * tell Lift which packages contain the View/Snippet/Comet classes.
+     */
+    LiftRules.addToPackages("com.pocketchangeapp")
+
+
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
-    LiftRules.addToPackages("com.pocketchangeapp")     
 
 
     def schemeLogger (msg : => AnyRef) = {
@@ -65,13 +83,16 @@ class Boot {
 
 object MenuInfo {
   import Loc._
-  val IfLoggedIn = Loc.If(() => User.currentUser.isDefined, "You must be logged in")
-  def menu: List[Menu] =  Menu(Loc("home", List("index"), "Home")) :: 
-    Menu(Loc("manageAccts", List("manage"), "Manage Accounts", IfLoggedIn)) :: 
-    Menu(Loc("addAcct", List("editAcct"), "Add Account", Hidden, IfLoggedIn)) ::
-    Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)) ::
-    Menu(Loc("help", List("help", "index"), "Help")) ::
+  val IfLoggedIn = If(() => User.currentUser.isDefined, "You must be logged in")
+
+  def menu: List[Menu] = 
+    List[Menu](Menu("Home") / "index",
+               Menu("Manage Accounts") / "manage" >> IfLoggedIn,
+               Menu("Add Account") / "editAcct" >> Hidden >> IfLoggedIn,
+               Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)),
+               Menu("Help") / "help" / "index") :::
     User.sitemap
+  
 }
 
 object DBVendor extends ConnectionManager {
