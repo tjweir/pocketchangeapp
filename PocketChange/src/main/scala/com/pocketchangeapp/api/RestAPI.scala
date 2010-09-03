@@ -7,7 +7,7 @@ package api {
 import scala.xml.{Node, NodeSeq}
 
 import net.liftweb.common.{Box,Full,Logger}
-import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,GetRequest,LiftResponse,LiftRules,NotFoundResponse,ParsePath,PutRequest,Req,RewriteRequest}
+import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,GetRequest,LiftResponse,LiftRules,NotFoundResponse,PutRequest,Req}
 import net.liftweb.http.rest.XMLApiHelper
 import net.liftweb.mapper.By
 

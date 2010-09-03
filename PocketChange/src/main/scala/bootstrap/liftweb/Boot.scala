@@ -1,6 +1,6 @@
 package bootstrap.liftweb
 
-import net.liftweb.common.{Box,Empty,Failure,Full,Logger}
+import net.liftweb.common.{Box,Empty,Full,Logger}
 import net.liftweb.util.Helpers
 import net.liftweb.http.{LiftRules,ParsePath,Req,RewriteRequest,RewriteResponse}
 import net.liftweb.sitemap.{Loc,Menu,SiteMap}

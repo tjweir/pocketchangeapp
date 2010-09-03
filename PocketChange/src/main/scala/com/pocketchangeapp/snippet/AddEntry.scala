@@ -3,8 +3,6 @@ package snippet {
 
 import scala.xml.{NodeSeq,Text}
 
-import java.util.Date
-
 import net.liftweb.common.{Box,Empty,Full,Logger}
 import net.liftweb.http.{FileParamHolder,S,SHtml,StatefulSnippet}
 

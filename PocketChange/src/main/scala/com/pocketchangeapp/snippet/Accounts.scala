@@ -7,9 +7,7 @@ import scala.xml.{NodeSeq,Text}
 
 import net.liftweb.common.{Box,Empty,Full}
 import net.liftweb.http.{RequestVar,S,SHtml}
-import net.liftweb.sitemap.{Menu,SiteMap}
 import net.liftweb.http.js.JsCmds
-import net.liftweb.util.Log
 
 // Import "bind", "chooseTemplate" and associated implicits
 import net.liftweb.util.Helpers._

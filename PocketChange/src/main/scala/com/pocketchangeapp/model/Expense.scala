@@ -11,8 +11,6 @@ import net.liftweb.common.{Box,Empty,Full}
 import net.liftweb.mapper._
 import net.liftweb.util.Helpers._
 
-import util.Util
-
 class Expense extends LongKeyedMapper[Expense] with IdPK {
   def getSingleton = Expense
 

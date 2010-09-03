@@ -4,10 +4,8 @@ package util {
 import scala.collection.mutable.HashMap
 
 import net.liftweb.common.{Box,Empty,Full}
-import net.liftweb.http.{ForbiddenResponse,InMemoryResponse,LiftResponse,RedirectResponse}
+import net.liftweb.http.{InMemoryResponse,LiftResponse,RedirectResponse}
 
-
-import java.io.{PipedInputStream,PipedOutputStream}
 import java.text.DecimalFormat
 
 import org.jfree.chart.{ChartFactory,ChartUtilities,JFreeChart}

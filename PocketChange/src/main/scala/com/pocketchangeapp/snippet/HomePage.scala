@@ -1,12 +1,9 @@
 package com.pocketchangeapp {
 package snippet {
 
-import java.util.Date
-
 import scala.xml.{NodeSeq,Text}
 
 import net.liftweb.common.Full
-import net.liftweb.util.Helpers.{bind,chooseTemplate}
 
 import model.User
 
