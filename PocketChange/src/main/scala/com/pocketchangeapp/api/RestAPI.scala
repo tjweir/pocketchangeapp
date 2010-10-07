@@ -4,83 +4,139 @@
 package com.pocketchangeapp {
 package api {
 
-import scala.xml.{Node, NodeSeq}
+import java.text.SimpleDateFormat
 
-import net.liftweb.common.{Box,Full,Logger}
-import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,GetRequest,LiftResponse,LiftRules,NotFoundResponse,ParsePath,PutRequest,Req,RewriteRequest}
+import scala.xml.{Elem, Node, NodeSeq, Text}
+
+import net.liftweb.common.{Box,Empty,Full,Logger}
+import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,GetRequest,JsonResponse,LiftResponse,LiftRules,NotFoundResponse,ParsePath,PutRequest,Req,RewriteRequest}
 import net.liftweb.http.rest.XMLApiHelper
-import net.liftweb.mapper.By
+import net.liftweb.http.js.JE.JsRaw
+import net.liftweb.mapper.{By,MaxRows}
 
 import model._
 
-object RestAPI extends XMLApiHelper{
+/**
+ * This object provides some conversion and formatting specific to our
+ * REST API.
+ */
+object RestFormatters {
+  implicit def accountToRestAccount (a : Account) = new RestAccount(a)
+  implicit def expenseToRestExpense (e : Expense) = new RestExpense(e)
+
+  /**
+   * This class provides some helper methods for formatting an Account.
+   */
+  class RestAccount (a : Account) {
+    // A helper to conver this Account and the last 10 expenses into an Atom feed
+    def toAtom = {
+      val entries = Expense.getByAcct(a,Empty,Empty,Empty,MaxRows(10))
+
+      <feed xmlns="http://www.w3.org/2005/Atom">
+        <title>{a.name}</title>
+        <id>urn:uuid:{a.uuid.is}</id>
+        <updated>{a.entries.headOption.map(_.restTimestamp) getOrElse
+                  (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(new java.util.Date)}</updated>
+        { a.entries.flatMap(_.toAtom) }
+      </feed>
+    }
+  }
+    
+
+  /**
+   * This class provides some helper methods for formatting an Expense.
+   */
+  class RestExpense (e : Expense) {
+    // A simple helper to generate the REST ID of this Expense
+    def restId = "http://www.pocketchangeapp.com/api/expense/" + e.id
+
+    // A simple helper to generate the REST timestamp of this Expense
+    def restTimestamp : String = 
+      (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(e.dateOf.is)
+
+    // Generates the XML REST representation of this Expense
+    def toXML: NodeSeq = 
+      <expense>
+        <id>{restId}</id>
+        <accountname>{e.accountName}</accountname>
+        <date>{restTimestamp}</date>
+        <description>{e.description.is}</description>
+        <amount>{e.amount.is.toString}</amount>
+        <tags>
+          {e.tags.flatMap(t => <tag>{t.name.is}</tag>)}
+        </tags>
+      </expense>
+
+    /* Atom requires either an entry or feed to have:
+     * - title
+     * - lastupdated
+     * - uid
+     * We don't have these here, so we'll add them elsewhere.
+     */
+    def toAtom : NodeSeq = 
+      <entry>
+        <id>urn:uuid:{restId}</id>
+        <title>{e.description.is}</title>
+        <updated>{restTimestamp}</updated>
+        <content type="xhtml">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <table>
+            <tr><th>Amount</th><th>Tags</th><th>Receipt</th></tr>
+            <tr><td>{e.amount.is.toString}</td>
+                <td>{e.tags.map(_.name.is).mkString(", ")}</td>
+                <td>{ if (e.receipt.is ne null) { <img src={"/image/" + e.id} /> } else Text("None") }</td></tr>
+            </table>
+          </div>
+        </content>
+      </entry>
+
+    // Generates the JSON REST representation of this Expense
+    def toJSON : String = {
+      import net.liftweb.json.JsonDSL._
+      import net.liftweb.json.JsonAST._
+
+      val entry  = 
+        ("id" -> restId) ~
+        ("date" -> restTimestamp) ~
+        ("description" -> e.description.is) ~
+        ("accountname" -> e.accountName) ~
+        ("amount" -> e.amount.is.toString) ~
+        ("tags" -> e.tags.map(_.name.is))
+      
+      compact(render(entry))
+    }
+  }
+}
+
+object DispatchRestAPI extends XMLApiHelper {
+  // Import our implicits for converting things around
+  import RestFormatters._
+
   def dispatch: LiftRules.DispatchPF = {     
-    case Req("api" :: "expense" :: eid :: Nil, "", GetRequest) => () => showExpenseXml(eid) // old
-    case Req("api" :: "expense" :: eid :: "xml" :: Nil, "", GetRequest) => () => showExpenseXml(eid) // new
-    case Req("api" :: "expense" :: eid :: "atom" :: Nil, "", GetRequest) => () => showExpenseAtom(eid) // new
+    // Define our getters first
+    case Req(List("api", "expense", Expense(e)), _, GetRequest) => 
+      () => Full(nodeSeqToResponse(e.toXML)) // default to XML
+    case Req(List("api", "expense", Expense(e), "xml"), _, GetRequest) => 
+      () => Full(nodeSeqToResponse(e.toXML)) // explicitly XML
+    case Req(List("api", "expense", Expense(e), "json"), _, GetRequest) => 
+      () => JsonResponse(JsRaw(e.toJSON), Nil, Nil, 200)  // explicitly JSON
+    case Req(List("api", "account", Account(a)), _, GetRequest) =>
+      () => AtomResponse(a.toAtom) // explicit atom request
 
-    case r @ Req("api" :: "expense" :: Nil, "", PutRequest) => () => addExpense(r)
+    // Define the PUT handler
+    case r @ Req("api" :: "expense" :: Nil, _, PutRequest) => () => addExpense(r)
+
     // Invalid API request - route to our error handler
-    case Req("api" :: x :: Nil, "", _) => failure _ 
-
+    case Req("api" :: x :: Nil, "", _) => () => BadResponse() // Everything else fails
   }
 
-
-  def failure(): LiftResponse = {
-    val ret: Box[NodeSeq] = Full(<op id="FAILURE"></op>)
-    NotFoundResponse()
-  }
-
-    // final wrap of responses
-  def createTag(in: NodeSeq) = {
-    println("[CreateTag] " + in)
-    <pca_api>{in}</pca_api>
-
-  }
-
-  def wrapXmlBody(in: NodeSeq) = {
-    println("[WrapXMLBody]: " + in)
-    <pca_api>{in}</pca_api>
-  }
-
-  // reacts to the GET Request
-  def showExpenseXml(eid: String): LiftResponse = {
-    val e: Box[NodeSeq] = for(e <- Expense.find(By(Expense.id, eid.toLong))) yield {
-      <operation id="show_expense" success="true">{e.toXML}</operation>
-
-    }
-    e
-  }
-
-  // reacts to the GET Request
-  def showExpenseAtom(eid: String): AtomResponse = {
-    val e: Box[Node] = for(e <- Expense.find(By(Expense.id, eid.toLong))) yield {
-      e.toAtom
-
-    }
-    AtomResponse(e.open_!)
-  }
-
-
-
-
-  private def getAccount(e: String, n: String): Account = {
-    val u = User.find(By(User.email, e))
-   
-    val a = Account.findByName(u.open_!, n) match {
-      case acct :: Nil => acct
-      case _ => new Account
-    }
-
-    a
-  }
-
+  def createTag (xml : NodeSeq) : Elem = <pca_api>{xml}</pca_api>
 
   // reacts to the PUT Request
   def addExpense(req: Req): LiftResponse = {
     var tempEmail = ""
     var tempPass = ""
-    var tempAccountName = ""
+    var tempAccountUUID = ""
 
     var expense = new Expense
     req.xml match {
@@ -88,7 +144,7 @@ object RestAPI extends XMLApiHelper{
         for(parameter <- parameters){ parameter match {
           case <email>{email}</email> => tempEmail = email.text
           case <password>{password}</password> => tempPass = password.text
-          case <accountName>{name}</accountName> => tempAccountName = name.text
+          case <accountUUID>{uuid}</accountUUID> => tempAccountUUID = uuid.text
           case <dateOf>{dateof}</dateOf> => expense.dateOf(new java.util.Date(dateof.text))
           case <amount>{value}</amount> => expense.amount(BigDecimal(value.text))
           case <desc>{description}</desc> => expense.description(description.text)
@@ -104,7 +160,7 @@ object RestAPI extends XMLApiHelper{
           case _ => new User
         }
 
-        val currentAccount = Account.find(By(Account.owner, u.id.is), By(Account.name, tempAccountName)).open_!
+        val currentAccount = Account.find(By(Account.owner, u.id.is), By(Account.uuid, tempAccountUUID)).open_!
         expense.account(currentAccount.id.is)
 
         val (entrySerial,entryBalance) = Expense.getLastExpenseData(currentAccount, expense.dateOf)
@@ -120,9 +176,9 @@ object RestAPI extends XMLApiHelper{
             val newBalance = currentAccount.balance.is + expense.amount.is
             currentAccount.balance(newBalance).save
 
-            CreatedResponse(wrapXmlBody(<operation id="add_expense" success="true"></operation>), "text/xml")
+            CreatedResponse(expense.toXml, "text/xml")
           case _ =>
-            CreatedResponse(wrapXmlBody(<operation id="add_expense" success="false"></operation>), "text/xml")
+            BadResponse() // TODO: Return a meaningful error
         }
       }
       catch {

@@ -52,7 +52,7 @@ class Boot {
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
 
-    LiftRules.dispatch.prepend(RestAPI.dispatch)
+    LiftRules.dispatch.prepend(DispatchRestAPI.dispatch)
 
     // Set up some rewrites
     LiftRules.statelessRewrite.append {
@@ -83,14 +83,16 @@ class Boot {
 
 object MenuInfo {
   import Loc._
+  // Define a simple test clause that we can use for multiple menu items
   val IfLoggedIn = If(() => User.currentUser.isDefined, "You must be logged in")
 
   def menu: List[Menu] = 
-    List[Menu](Menu("Home") / "index",
-               Menu("Manage Accounts") / "manage" >> IfLoggedIn,
-               Menu("Add Account") / "editAcct" >> Hidden >> IfLoggedIn,
+    List[Menu](Menu.i("Home") / "index",
+               Menu.i("Manage Accounts") / "manage" >> IfLoggedIn,
+               Menu.i("Add Account") / "editAcct" >> Hidden >> IfLoggedIn,
+               // The DSL currently doesn't support head match, so we go old-school
                Menu(Loc("viewAcct", List("viewAcct") -> true, "View Account", Hidden, IfLoggedIn)),
-               Menu("Help") / "help" / "index") :::
+               Menu.i("Help") / "help" / "index") :::
     User.sitemap
   
 }

@@ -2,14 +2,14 @@ package com.pocketchangeapp {
 package model {
 
 import java.math.MathContext
-import java.text.{DateFormat,SimpleDateFormat}
 import java.util.Date
+import java.text.DateFormat
 
-import scala.xml.{NodeSeq,Text}
+
+import scala.xml.{Elem,NodeSeq,Text}
 
 import net.liftweb.common.{Box,Empty,Full}
 import net.liftweb.mapper._
-import net.liftweb.util.Helpers._
 
 import util.Util
 
@@ -20,7 +20,8 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
     override def dbIndexed_? = true
   }
 
-  def accountName = Text("My account is " + account.obj.map(_.name.is).openOr("unknown"))
+  // A helper to simplify access to the account name
+  def accountName : String = account.obj.map(_.name.is).openOr("unknown")
 
   object dateOf extends MappedDateTime(this) {
     final val dateFormat = 
@@ -60,6 +61,7 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   def tags (newTags : String) = locker.synchronized {
+    import net.liftweb.util.StringHelpers.stringToSuper
     _tags = newTags.roboSplit(",").map(Tag.byName(account, _))
     this
   }
@@ -70,10 +72,6 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   def tagsToo : List[Tag] = ExpenseTag.findAll(By(ExpenseTag.expense, this.id)).map(_.tag.obj.open_!)
-
-  def showTags = Text(tags.map(_.name.is).mkString(", "))
-  def showXMLTags: NodeSeq = tags.map(t => <tag>{t.name.is}</tag>)
-  def showJSONTags: String = tags.map(t => {"'" + t.name.is + "'" }).mkString(", ") 
 
   def owner = account.obj match {
     case Full(acct) => acct.owner.obj
@@ -86,71 +84,6 @@ class Expense extends LongKeyedMapper[Expense] with IdPK {
   }
 
   override def hashCode = this.id.is.hashCode
-
-  private def getAccountName(id: Long): String = {
-    Account.find(By(Account.id, id)) match {
-      case Full(a) => a.name.is
-      case _ => "No Account Name"
-    }
-  }
-
-  def toXML: NodeSeq = {
-   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
-   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-   val edate = formatter.format(this.dateOf.is)
-
-    <expense>
-      <id>{id}</id>
-      <accountname>{getAccountName(account.is)}</accountname>
-      <date>{edate}</date>
-      <description>{description.is}</description>
-      <amount>{amount.is.toString}</amount>
-      <tags>
-        {showXMLTags}
-      </tags>
-    </expense>
-  }
-
-
-  /* Atom requires either an entry or feed to have:
-   - title
-   - lastupdated
-   - uid
-  */
-  def toAtom = {
-   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
-   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-   val edate = formatter.format(this.dateOf.is)
-
-   <entry xmlns="http://www.w3.org/2005/Atom">
-    <expense>
-      <id>{id}</id>
-      <accountname>{getAccountName(account.is)}</accountname>
-      <date>{edate}</date>
-      <description>{description.is}</description>
-      <amount>{amount.is.toString}</amount>
-      <tags>
-        {showXMLTags}
-      </tags>
-     </expense>
-    </entry>
-  }
-
-
-  def toJSON = {
-   val id = "http://www.pocketchangeapp.com/api/expense/" + this.id
-   val formatter = new  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-   val edate = formatter.format(this.dateOf.is)
-
-   "{'expense':{ 'id':'" + id + "','accountname':'" + getAccountName(account.is) + "'," +
-   "'date':'" + edate + "'," +
-   "'description':'" + description.is + "'," +
-   "'amount':'" + amount.is.toString + "'," +
-   "'tags': [" + showJSONTags + "]}"
-  }
-
-
-
 }
 
 object Expense extends Expense with LongKeyedMetaMapper[Expense] {
@@ -223,6 +156,13 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
     }
   }
 
+  import net.liftweb.util.ControlHelpers.tryo
+  /**
+   * Define an extractor that can be used to locate an Expense based on its ID
+   */
+  def unapply (id : String) : Option[Expense] = tryo {
+    find(By(Expense.id, id.toLong)).toOption
+  } openOr None
 }
   
 class ExpenseTag extends LongKeyedMapper[ExpenseTag] with IdPK {
