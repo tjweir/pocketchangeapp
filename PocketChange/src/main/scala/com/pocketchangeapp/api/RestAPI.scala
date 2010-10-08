@@ -11,6 +11,7 @@ import scala.xml.{Elem, Node, NodeSeq, Text}
 import net.liftweb.common.{Box,Empty,Full,Logger}
 import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,GetRequest,JsonResponse,LiftResponse,LiftRules,NotFoundResponse,ParsePath,PutRequest,Req,RewriteRequest}
 import net.liftweb.http.rest.XMLApiHelper
+import net.liftweb.http.js.JsExp
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.mapper.{By,MaxRows}
 
@@ -21,91 +22,81 @@ import model._
  * REST API.
  */
 object RestFormatters {
-  implicit def accountToRestAccount (a : Account) = new RestAccount(a)
-  implicit def expenseToRestExpense (e : Expense) = new RestExpense(e)
+  // A simple helper to generate the REST ID of an Expense
+  def restId (e : Expense) = "http://www.pocketchangeapp.com/api/expense/" + e.id
+
+  // A simple helper to generate the REST timestamp of an Expense
+  def restTimestamp (e : Expense) : String = 
+    (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(e.dateOf.is)
 
   /**
-   * This class provides some helper methods for formatting an Account.
+   * Generates the XML REST representation of an Expense
    */
-  class RestAccount (a : Account) {
-    // A helper to conver this Account and the last 10 expenses into an Atom feed
-    def toAtom = {
-      val entries = Expense.getByAcct(a,Empty,Empty,Empty,MaxRows(10))
+  def toXML (e : Expense) : Elem = 
+    <expense>
+      <id>{restId(e)}</id>
+      <accountname>{e.accountName}</accountname>
+      <date>{restTimestamp(e)}</date>
+      <description>{e.description.is}</description>
+      <amount>{e.amount.is.toString}</amount>
+      <tags>
+        {e.tags.flatMap {t => <tag>{t.name.is}</tag>}}
+      </tags>
+    </expense>
 
-      <feed xmlns="http://www.w3.org/2005/Atom">
-        <title>{a.name}</title>
-        <id>urn:uuid:{a.uuid.is}</id>
-        <updated>{a.entries.headOption.map(_.restTimestamp) getOrElse
-                  (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(new java.util.Date)}</updated>
-        { a.entries.flatMap(_.toAtom) }
-      </feed>
-    }
-  }
+  /*
+   * Generates the JSON REST representation of an Expense
+   */
+  def toJSON (e : Expense) : JsExp = {
+    import net.liftweb.json.JsonDSL._
+    import net.liftweb.json.JsonAST._
+
+    val entry  = 
+      ("id" -> restId(e)) ~
+      ("date" -> restTimestamp(e)) ~
+      ("description" -> e.description.is) ~
+      ("accountname" -> e.accountName) ~
+      ("amount" -> e.amount.is.toString) ~
+      ("tags" -> e.tags.map(_.name.is))
     
-
-  /**
-   * This class provides some helper methods for formatting an Expense.
-   */
-  class RestExpense (e : Expense) {
-    // A simple helper to generate the REST ID of this Expense
-    def restId = "http://www.pocketchangeapp.com/api/expense/" + e.id
-
-    // A simple helper to generate the REST timestamp of this Expense
-    def restTimestamp : String = 
-      (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(e.dateOf.is)
-
-    // Generates the XML REST representation of this Expense
-    def toXML: NodeSeq = 
-      <expense>
-        <id>{restId}</id>
-        <accountname>{e.accountName}</accountname>
-        <date>{restTimestamp}</date>
-        <description>{e.description.is}</description>
-        <amount>{e.amount.is.toString}</amount>
-        <tags>
-          {e.tags.flatMap(t => <tag>{t.name.is}</tag>)}
-        </tags>
-      </expense>
-
-    /* Atom requires either an entry or feed to have:
-     * - title
-     * - lastupdated
-     * - uid
-     * We don't have these here, so we'll add them elsewhere.
-     */
-    def toAtom : NodeSeq = 
-      <entry>
-        <id>urn:uuid:{restId}</id>
-        <title>{e.description.is}</title>
-        <updated>{restTimestamp}</updated>
-        <content type="xhtml">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            <table>
-            <tr><th>Amount</th><th>Tags</th><th>Receipt</th></tr>
-            <tr><td>{e.amount.is.toString}</td>
-                <td>{e.tags.map(_.name.is).mkString(", ")}</td>
-                <td>{ if (e.receipt.is ne null) { <img src={"/image/" + e.id} /> } else Text("None") }</td></tr>
-            </table>
-          </div>
-        </content>
-      </entry>
-
-    // Generates the JSON REST representation of this Expense
-    def toJSON : String = {
-      import net.liftweb.json.JsonDSL._
-      import net.liftweb.json.JsonAST._
-
-      val entry  = 
-        ("id" -> restId) ~
-        ("date" -> restTimestamp) ~
-        ("description" -> e.description.is) ~
-        ("accountname" -> e.accountName) ~
-        ("amount" -> e.amount.is.toString) ~
-        ("tags" -> e.tags.map(_.name.is))
-      
-      compact(render(entry))
-    }
+    JsRaw(compact(render(entry)))
   }
+
+  /*
+   * Generates an Atom 1.0 feed from the last 10 Expenses for the given
+   * account.
+   */
+  def toAtom (a : Account) : Elem = {
+    val entries = Expense.getByAcct(a,Empty,Empty,Empty,MaxRows(10))
+    
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>{a.name}</title>
+      <id>urn:uuid:{a.uuid.is}</id>
+      <updated>{a.entries.headOption.map(restTimestamp) getOrElse
+                (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(new java.util.Date)}</updated>
+      { a.entries.flatMap(toAtom) }
+    </feed>
+  }
+
+  /*
+   * Generates the XML Atom representation of an Expense
+   */
+  def toAtom (e : Expense) : Elem = 
+    <entry>
+      <id>urn:uuid:{restId(e)}</id>
+      <title>{e.description.is}</title>
+      <updated>{restTimestamp(e)}</updated>
+      <content type="xhtml">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+          <table>
+          <tr><th>Amount</th><th>Tags</th><th>Receipt</th></tr>
+          <tr><td>{e.amount.is.toString}</td>
+              <td>{e.tags.map(_.name.is).mkString(", ")}</td>
+              <td>{ if (e.receipt.is ne null) { <img src={"/image/" + e.id} /> } else Text("None") }</td></tr>
+          </table>
+        </div>
+      </content>
+    </entry>
 }
 
 object DispatchRestAPI extends XMLApiHelper {
@@ -115,13 +106,13 @@ object DispatchRestAPI extends XMLApiHelper {
   def dispatch: LiftRules.DispatchPF = {     
     // Define our getters first
     case Req(List("api", "expense", Expense(e)), _, GetRequest) => 
-      () => Full(nodeSeqToResponse(e.toXML)) // default to XML
+      () => Full(nodeSeqToResponse(toXML(e))) // default to XML
     case Req(List("api", "expense", Expense(e), "xml"), _, GetRequest) => 
-      () => Full(nodeSeqToResponse(e.toXML)) // explicitly XML
+      () => Full(nodeSeqToResponse(toXML(e))) // explicitly XML
     case Req(List("api", "expense", Expense(e), "json"), _, GetRequest) => 
-      () => JsonResponse(JsRaw(e.toJSON), Nil, Nil, 200)  // explicitly JSON
+      () => JsonResponse(toJSON(e), Nil, Nil, 200)  // explicitly JSON
     case Req(List("api", "account", Account(a)), _, GetRequest) =>
-      () => AtomResponse(a.toAtom) // explicit atom request
+      () => AtomResponse(toAtom(a)) // explicit atom request
 
     // Define the PUT handler
     case r @ Req("api" :: "expense" :: Nil, _, PutRequest) => () => addExpense(r)
