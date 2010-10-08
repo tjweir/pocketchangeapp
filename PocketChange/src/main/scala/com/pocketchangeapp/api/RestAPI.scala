@@ -22,12 +22,17 @@ import model._
  * REST API.
  */
 object RestFormatters {
+  /* The REST timestamp format. Not threadsafe, so we create
+   * a new one each time. */
+  def timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
   // A simple helper to generate the REST ID of an Expense
-  def restId (e : Expense) = "http://www.pocketchangeapp.com/api/expense/" + e.id
+  def restId (e : Expense) = 
+    "http://www.pocketchangeapp.com/api/expense/" + e.id
 
   // A simple helper to generate the REST timestamp of an Expense
   def restTimestamp (e : Expense) : String = 
-    (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(e.dateOf.is)
+    timestamp.format(e.dateOf.is)
 
   /**
    * Generates the XML REST representation of an Expense
@@ -73,7 +78,7 @@ object RestFormatters {
       <title>{a.name}</title>
       <id>urn:uuid:{a.uuid.is}</id>
       <updated>{a.entries.headOption.map(restTimestamp) getOrElse
-                (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")).format(new java.util.Date)}</updated>
+                timestamp.format(new java.util.Date)}</updated>
       { a.entries.flatMap(toAtom) }
     </feed>
   }
@@ -92,7 +97,11 @@ object RestFormatters {
           <tr><th>Amount</th><th>Tags</th><th>Receipt</th></tr>
           <tr><td>{e.amount.is.toString}</td>
               <td>{e.tags.map(_.name.is).mkString(", ")}</td>
-              <td>{ if (e.receipt.is ne null) { <img src={"/image/" + e.id} /> } else Text("None") }</td></tr>
+              <td>{ 
+                if (e.receipt.is ne null) { 
+                  <img src={"/image/" + e.id} /> 
+                } else Text("None") 
+              }</td></tr>
           </table>
         </div>
       </content>
@@ -115,10 +124,12 @@ object DispatchRestAPI extends XMLApiHelper {
       () => AtomResponse(toAtom(a)) // explicit atom request
 
     // Define the PUT handler
-    case r @ Req("api" :: "expense" :: Nil, _, PutRequest) => () => addExpense(r)
+    case r @ Req("api" :: "expense" :: Nil, _, PutRequest) => 
+      () => addExpense(r)
 
     // Invalid API request - route to our error handler
-    case Req("api" :: x :: Nil, "", _) => () => BadResponse() // Everything else fails
+    case Req("api" :: x :: Nil, "", _) => 
+      () => BadResponse() // Everything else fails
   }
 
   def createTag (xml : NodeSeq) : Elem = <pca_api>{xml}</pca_api>
