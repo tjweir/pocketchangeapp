@@ -3,7 +3,7 @@ package com.pocketchangeapp.model
 import java.math.MathContext
 import java.text.SimpleDateFormat
 
-import net.liftweb.common.Empty
+import net.liftweb.common.{Box,Empty}
 import net.liftweb.mapper._
 
 class Account extends LongKeyedMapper[Account] with IdPK {
@@ -50,10 +50,15 @@ class Account extends LongKeyedMapper[Account] with IdPK {
   // Optional notes about the account
   def notes = AccountNote.findAll(By(AccountNote.account, this.id))
 
-  // The UUID of the account
-  object uuid extends MappedStringIndex(this, 32) {
-    override def dbPrimaryKey_? = false
+  // This method checks view access by a particular user
+  def isViewableBy (user : Box[User]) : Boolean = {
+    is_public.is ||
+    user.map(_.allAccounts.contains(this)).openOr(false)
   }
+
+  // This method checks edit access by a particular user
+  def isEditableBy (user : Box[User]) : Boolean = 
+    user.map(_.editable.contains(this)).openOr(false)
 }
 
 object Account extends Account with LongKeyedMetaMapper[Account] {
@@ -62,10 +67,11 @@ object Account extends Account with LongKeyedMetaMapper[Account] {
 
   import net.liftweb.util.Helpers.tryo
   /**
-   * Define an extractor that can be used to locate an Account based on its ID
+   * Define an extractor that can be used to locate an Account based
+   * on its ID.
    */
   def unapply (id : String) : Option[Account] = tryo {
-    find(By(Account.uuid, id)).toOption
+    find(By(Account.id, id.toLong)).toOption
   } openOr None
 }
 

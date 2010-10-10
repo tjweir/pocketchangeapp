@@ -1,18 +1,23 @@
 package bootstrap.liftweb
 
-import net.liftweb.common.{Box,Empty,Failure,Full,Logger}
-import net.liftweb.util.Helpers
-import net.liftweb.http.{LiftRules,ParsePath,Req,RewriteRequest,RewriteResponse}
-import net.liftweb.sitemap.{Loc,Menu,SiteMap}
-import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
-import com.pocketchangeapp.model._
-import com.pocketchangeapp.api._
-import com.pocketchangeapp.util.{Charting,Image}
+
+import net.liftweb.common.{Box,Empty,Failure,Full,Logger}
+import net.liftweb.util.{Helpers,LoanWrapper}
+import net.liftweb.http.{GetRequest,LiftRules,ParsePath,PutRequest,Req,
+                         RequestVar,RewriteRequest,RewriteResponse,S}
+import net.liftweb.sitemap.{Loc,Menu,SiteMap}
+import net.liftweb.mapper.{By,DB,ConnectionManager,Schemifier,
+                           DefaultConnectionIdentifier,ConnectionIdentifier}
 
 // Get implicit conversions 
 import net.liftweb.sitemap.Loc._
 import net.liftweb.util.Helpers._
+
+import com.pocketchangeapp.model._
+import com.pocketchangeapp.api._
+import com.pocketchangeapp.util.{Charting,Image}
+
 
  
 /**
@@ -23,6 +28,9 @@ import net.liftweb.util.Helpers._
  * TODO: Connect Lucene/Compass for search
  */
 class Boot {
+  // Set up a logger to use for startup messages
+  val logger = Logger(classOf[Boot])
+
   def boot {
     /*
      * LiftRules.early allows us to apply functions to the request before
@@ -43,16 +51,21 @@ class Boot {
 
     if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
 
-
+    // This method is here due to type conflicts when attempting to use 
+    // a bare method.
     def schemeLogger (msg : => AnyRef) = {
-      Logger(classOf[Boot]).info(msg)
+      logger.info(msg)
     }
 
-    Schemifier.schemify(true, schemeLogger _, User, Tag, Account, AccountAdmin, AccountViewer, AccountNote, Expense, ExpenseTag)
+    Schemifier.schemify(true, schemeLogger _, 
+                        User, Tag, Account, AccountAdmin,
+                        AccountViewer, AccountNote, Expense, ExpenseTag)
 
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
 
+    // Tie in the REST API. Uncomment the one you want to use
     LiftRules.dispatch.prepend(DispatchRestAPI.dispatch)
+    // LiftRules.dispatch.prepend(HelperRestAPI)
 
     // Set up some rewrites
     LiftRules.statelessRewrite.append {
@@ -74,10 +87,33 @@ class Boot {
 	() => Full(Image.viewImage(expenseId))
     }
 
-    import scala.xml.Text
-    val m = Title(if (User.loggedIn_?) { Text("a") } else { Text("b") })
+    // Hook in our REST API auth
+    LiftRules.httpAuthProtectedResource.append(DispatchRestAPI.protection)
 
-    Logger(classOf[Boot]).info("Bootstrap up")
+    /* We're going to use HTTP Basic auth for REST, although
+     * technically this allows for its use anywhere in the app. */
+    import net.liftweb.http.auth.{AuthRole,HttpBasicAuthentication,userRoles}
+    LiftRules.authentication = HttpBasicAuthentication("PocketChange") {
+      case (userEmail, userPass, _) => {
+        logger.debug("Authenticating: " + userEmail)
+        User.find(By(User.email, userEmail)).map { user =>
+          if (user.password.match_?(userPass)) {
+            logger.debug("Auth succeeded for " + userEmail)
+            User.logUserIn(user)
+
+            // Compute all of the user roles
+            userRoles(user.editable.map(acct => AuthRole("editAcct:" + acct.id)) ++
+                      user.allAccounts.map(acct => AuthRole("viewAcct:" + acct.id)))
+            true
+          } else {
+            logger.warn("Auth failed for " + userEmail)
+            false
+          }
+        } openOr false
+      }
+    }
+
+    logger.info("Bootstrap up")
   }
 }
 

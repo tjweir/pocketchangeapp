@@ -121,7 +121,7 @@ class Accounts {
               }
 
               bind("acct", xhtml,
-                   "atomLink" -> <link href={"/api/account/" + acct.uuid} type="application/atom+xml" rel="alternate" title={acct.name + " feed"} />,
+                   "atomLink" -> <link href={"/api/account/" + acct.id} type="application/atom+xml" rel="alternate" title={acct.name + " feed"} />,
                    "name" -> acct.name.asHtml,
                    "balance" -> acct.balance.asHtml,
                    "tags" -> tags,

@@ -118,7 +118,8 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
     Expense.findAll((By(Expense.account, account.id) :: dateClause :: entryOrder :: params.toList).toSeq : _*)
   }
 
-  
+  // TODO: getLastExpenseData and updateEntries should be combined to do an atomic update
+  // on the Expense table.
 
   // returns the serial and balance of the last entry before this one
   def getLastExpenseData (acct : Account, date : Date) : (Long,BigDecimal) = {
@@ -158,10 +159,15 @@ object Expense extends Expense with LongKeyedMetaMapper[Expense] {
 
   import net.liftweb.util.ControlHelpers.tryo
   /**
-   * Define an extractor that can be used to locate an Expense based on its ID
+   * Define an extractor that can be used to locate an Expense based
+   * on its ID. Returns a tuple of the Expense and whether the
+   * Expense's account is public.
    */
-  def unapply (id : String) : Option[Expense] = tryo {
-    find(By(Expense.id, id.toLong)).toOption
+  def unapply (id : String) : Option[(Expense,Boolean)] = tryo {
+    find(By(Expense.id, id.toLong)).map { expense => 
+      (expense, 
+       expense.account.obj.open_!.is_public.is)
+    }.toOption
   } openOr None
 }
   
