@@ -42,6 +42,7 @@ object RestFormatters {
     <expense>
       <id>{restId(e)}</id>
       <accountname>{e.accountName}</accountname>
+      <accountid>{e.account.obj.open_!.id.is}</accountid>
       <date>{restTimestamp(e)}</date>
       <description>{e.description.is}</description>
       <amount>{e.amount.is.toString}</amount>
@@ -62,6 +63,7 @@ object RestFormatters {
     ("date" -> restTimestamp(e)) ~
     ("description" -> e.description.is) ~
     ("accountname" -> e.accountName) ~
+    ("accountid" -> e.account.obj.open_!.id.is) ~
     ("amount" -> e.amount.is.toString) ~
     ("tags" -> e.tags.map(_.name.is))
   }
