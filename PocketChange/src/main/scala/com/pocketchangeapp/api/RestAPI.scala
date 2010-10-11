@@ -42,9 +42,17 @@ object DispatchRestAPI extends XMLApiHelper {
     case Req(List("api", "account", Account(account)), _, GetRequest) =>
       () => AtomResponse(toAtom(account))
 
-    // Define the PUT handler
-    case request @ Req(List("api", "account", Account(account)), _, PutRequest) => 
-      () => addExpense(account,request)
+    // Define the PUT handler for both XML and JSON MIME types
+    case request @ Req(List("api", "account", Account(account)), _, PutRequest) 
+      if request.xml_? => 
+        () => addExpense(fromXML(request.xml,account), 
+                         account, 
+                         result => CreatedResponse(toXML(result), "text/xml"))
+    case request @ Req(List("api", "account", Account(account)), _, PutRequest) 
+      if request.json_? => 
+        () => addExpense(fromJSON(request.body,account), 
+                         account,
+                         result => JsonResponse(toJSONExp(result), Nil, Nil, 201))
 
     // Invalid API request - route to our error handler
     case Req("api" :: x :: Nil, "", _) => 
@@ -71,39 +79,39 @@ object DispatchRestAPI extends XMLApiHelper {
   def createTag (xml : NodeSeq) : Elem = <pca_api>{xml}</pca_api>
 
   // reacts to the PUT Request
-  def addExpense(account : Account, req: Req): LiftResponse = {
-    RestFormatters.fromXML(req.xml, account) match {
-      case Full(expense) => {
-        val (entrySerial,entryBalance) = 
-          Expense.getLastExpenseData(account, expense.dateOf)
+  def addExpense(parsedExpense : Box[Expense], 
+                 account : Account, 
+                 success : Expense => LiftResponse): LiftResponse = parsedExpense match {
+    case Full(expense) => {
+      val (entrySerial,entryBalance) = 
+        Expense.getLastExpenseData(account, expense.dateOf)
 
-        expense.account(account).serialNumber(entrySerial + 1).
-          currentBalance(entryBalance + expense.amount)
+      expense.account(account).serialNumber(entrySerial + 1).
+      currentBalance(entryBalance + expense.amount)
         
-        expense.validate match {
-          case Nil => {
-            Expense.updateEntries(entrySerial + 1, expense.amount.is)
-            expense.save
+      expense.validate match {
+        case Nil => {
+          Expense.updateEntries(entrySerial + 1, expense.amount.is)
+          expense.save
           
-            account.balance(account.balance.is + expense.amount.is).save
+          account.balance(account.balance.is + expense.amount.is).save
 
-            CreatedResponse(toXML(expense), "text/xml")
-          }
-          case errors => {
-            val message = errors.mkString("Validation failed:", ",","")
-            logger.error(message)
-            ResponseWithReason(BadResponse(), message)
-          }
+          success(expense)
+        }
+        case errors => {
+          val message = errors.mkString("Validation failed:", ",","")
+          logger.error(message)
+          ResponseWithReason(BadResponse(), message)
         }
       }
-      case Failure(msg, _, _) => {
-        logger.error(msg)
-        ResponseWithReason(BadResponse(), msg)
-      }
-      case error => {
-        logger.error("Parsed expense as : " + error)
-        BadResponse()
-      }
+    }
+    case Failure(msg, _, _) => {
+      logger.error(msg)
+      ResponseWithReason(BadResponse(), msg)
+    }
+    case error => {
+      logger.error("Parsed expense as : " + error)
+      BadResponse()
     }
   }
 }

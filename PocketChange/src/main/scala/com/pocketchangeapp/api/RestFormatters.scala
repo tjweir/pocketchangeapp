@@ -13,7 +13,7 @@ import scala.xml.{Elem, NodeSeq, Text}
 
 import net.liftweb.common.{Box,Empty,Failure,Full}
 import net.liftweb.mapper.{By,MaxRows}
-import net.liftweb.json.JsonAST.JValue
+import net.liftweb.json.JsonAST.{JObject,JValue}
 import net.liftweb.http.js.JsExp
 
 import model._
@@ -49,63 +49,6 @@ object RestFormatters {
         {e.tags.flatMap {t => <tag>{t.name.is}</tag>}}
       </tags>
     </expense>
-
-  /**
-   * Parses an Expense from XML input. This method does only rudimentary
-   * validation of the parsed Expense and tries to be lenient on input.
-   */
-  def fromXML (rootNode : Box[Elem], account : Account) : Box[Expense] = rootNode match {
-    case Full(<expense>{parameters @ _*}</expense>) => {
-      val expense = Expense.create
-
-      try {
-        // Keep track of what we've parse so that we can validate
-        var (dateSet,descriptionSet,amountSet) = (false,false,false)
-
-        for(parameter <- parameters) { 
-          parameter match {
-            case <date>{date}</date> => 
-              expense.dateOf(timestamp.parse(date.text)); dateSet = true
-            case <description>{description}</description> => 
-              expense.description(description.text); descriptionSet = true
-            case <amount>{value}</amount> => 
-              expense.amount(BigDecimal(value.text)); amountSet = true
-            case <tags>{ tagElems @ _* }</tags> => {
-              var tags = List[String]()
-              
-              for (tag <- tagElems) {
-                tag match {
-                  case <tag>{tagName}</tag> => tags ::= tagName.text
-                  case other => // Ignore (could be whitespace)
-                }
-              }
-
-              expense.tags(tags.map(Tag.byName(account.id.is, _)))
-            }
-            case _ => // Ignore (could be whitespace)
-          }
-        }
-      
-        if (dateSet && descriptionSet && amountSet) {
-          Full(expense)
-        } else {
-          val missing = 
-            List(dateSet,descriptionSet,amountSet).
-              zip(List("date","description","amount")).
-              filter(!_._1).map(_._2).mkString(",")
-
-          Failure("Invalid Expense XML. Missing: " + missing)
-        }
-      } catch {
-        case pe : java.text.ParseException =>
-          Failure("Failed to parse date")
-        case nfe : java.lang.NumberFormatException =>
-          Failure("Failed to parse amount")
-      }
-    }
-    case other => Empty
-  }
-
 
   /**
    * Generates the JSON REST representation of an Expense
@@ -174,6 +117,98 @@ object RestFormatters {
         </div>
       </content>
     </entry>
+
+  /**
+   * Parses an Expense from a Map of string/value pairs.This method does
+   * only rudimentary validation of the parsed Expense and tries to be
+   * lenient on input.
+   */
+  def fromMap (data : scala.collection.Map[String,String], tags: List[String], account : Account) : Box[Expense] = {
+    val expense = Expense.create
+
+    try {
+      val fieldParsers : List[(String, String => Expense)] = 
+        ("date", (date : String) => expense.dateOf(timestamp.parse(date))) ::
+        ("description", (desc : String) => expense.description(desc)) ::
+        ("amount", (amount : String) => expense.amount(BigDecimal(amount))) :: Nil
+
+      val missing = fieldParsers.flatMap { 
+        field => // We invert the flatMap here to only give us missing values
+          if (data.get(field._1).map(field._2).isDefined) None else Some(field._1)
+      }
+      
+      if (missing.isEmpty) {
+        expense.account(account)
+        expense.tags(tags.map(Tag.byName(account.id.is,_)))
+        Full(expense)
+      } else {
+        Failure(missing.mkString("Invalid expense. Missing: ", ",", ""))
+      }
+    } catch {
+      case pe : java.text.ParseException => Failure("Failed to parse date")
+      case nfe : java.lang.NumberFormatException => Failure("Failed to parse amount")
+    }
+  }
+
+  /**
+   * Parses an Expense from JSON input.
+   */
+  def fromJSON (obj : Box[Array[Byte]], account : Account) : Box[Expense] = obj match {
+    case Full(rawBytes) => {
+      // We use the Scala util JSON parser here because we want to avoid parsing
+      // numeric values into doubles. We'll just leave them as Strings
+      import scala.util.parsing.json.JSON
+      JSON.perThreadNumberParser = { in : String => in }
+      
+      val contents = new String(rawBytes, "UTF-8")
+      JSON.parseFull(contents) match {
+        case Some(data : Map[String,Any]) => {
+          val tags : List[String] = data.get("tags") match {
+            case Some(l : List[String]) => l
+            case _ => Nil
+          }
+          
+          val otherData = 
+            data.filterKeys(_ != "tags").mapElements(_.toString)
+
+          fromMap(otherData, tags, account)
+        }
+        case other => Failure("Invalid JSON submitted: \"%s\"".format(contents))
+      }
+    }
+    case _ => Failure("Empty body submitted")
+  }
+
+  /**
+   * Parses an Expense from XML input.
+   */
+  def fromXML (rootNode : Box[Elem], account : Account) : Box[Expense] = rootNode match {
+    case Full(<expense>{parameters @ _*}</expense>) => {
+      var data = Map[String,String]()
+      var tags = List[String]()
+
+      for(parameter <- parameters) { 
+        parameter match {
+          case <date>{date}</date> => data += "date" -> date.text
+          case <description>{description}</description> => 
+            data += "description" -> description.text
+          case <amount>{amount}</amount> => data += "amount" -> amount.text
+          case <tags>{ tagElems @ _* }</tags> => {
+            for (tag <- tagElems) {
+              tag match {
+                case <tag>{tagName}</tag> => tags ::= tagName.text
+                case other => // Ignore (could be whitespace)
+              }
+            }
+          }
+          case _ => // Ignore (could be whitespace)
+        }
+      }
+      
+      fromMap(data, tags, account)
+    }
+    case other => Failure("Missing root expense element")
+  }
 }
 
 // Close package statements
