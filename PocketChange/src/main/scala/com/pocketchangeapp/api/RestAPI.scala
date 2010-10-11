@@ -15,8 +15,9 @@ import net.liftweb.common.{Box,Empty,Failure,Full,Logger}
 import net.liftweb.http.{AtomResponse,BadResponse,CreatedResponse,
                          GetRequest,JsonResponse,LiftResponse,LiftRules,
                          NotFoundResponse,ParsePath,PutRequest,Req,
-                         ResponseWithReason,RewriteRequest}
-import net.liftweb.http.rest.XMLApiHelper
+                         ResponseWithReason,RewriteRequest, XmlResponse}
+import net.liftweb.http.rest.{RestHelper,XMLApiHelper}
+import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.mapper.By
 
 import model._
@@ -38,7 +39,7 @@ object DispatchRestAPI extends XMLApiHelper {
     case Req(List("api", "expense", Expense(expense,_), "xml"), _, GetRequest) => 
       () => nodeSeqToResponse(toXML(expense))
     case Req(List("api", "expense", Expense(expense,_), "json"), _, GetRequest) => 
-      () => JsonResponse(toJSONExp(expense), Nil, Nil, 200)
+      () => JsonResponse(toJSON(expense))
     case Req(List("api", "account", Account(account)), _, GetRequest) =>
       () => AtomResponse(toAtom(account))
 
@@ -52,7 +53,7 @@ object DispatchRestAPI extends XMLApiHelper {
       if request.json_? => 
         () => addExpense(fromJSON(request.body,account), 
                          account,
-                         result => JsonResponse(toJSONExp(result), Nil, Nil, 201))
+                         result => JsonResponse(toJSON(result), Nil, Nil, 201))
 
     // Invalid API request - route to our error handler
     case Req("api" :: x :: Nil, "", _) => 
@@ -76,7 +77,12 @@ object DispatchRestAPI extends XMLApiHelper {
       Full(AuthRole("viewAcct:" + e.account.obj.open_!.id))
   }
 
-  def createTag (xml : NodeSeq) : Elem = <pca_api>{xml}</pca_api>
+  // We're overriding this because we don't want the operation and success tags
+  override def buildResponse (success: Boolean, 
+                              msg : Box[NodeSeq],
+                              body : NodeSeq) = XmlResponse(body.first)
+
+  def createTag(in : NodeSeq) : Elem = <unused/>
 
   // reacts to the PUT Request
   def addExpense(parsedExpense : Box[Expense], 
@@ -116,6 +122,39 @@ object DispatchRestAPI extends XMLApiHelper {
   }
 }
 
+object RestHelperAPI extends RestHelper {
+  // Import our methods for converting things around
+  import RestFormatters._
+
+  // Service Atom and requests that don't request a specific format
+  serve {
+    // Default to XML
+    case Get(List("api", "expense", Expense(expense,_)), _) => 
+      () => Full(toXML(expense))
+    case Get(List("api", "account", Account(account)), _) =>
+      () => Full(AtomResponse(toAtom(account)))
+  }
+ 
+  // Define an implicit conversion from an Expense to XML or JSON
+  import net.liftweb.http.rest.{JsonSelect,XmlSelect}
+  implicit def expenseToRestResponse : JxCvtPF[Expense] = {
+    case (JsonSelect, e, _) => toJSON(e)
+    case (XmlSelect, e, _) => toXML(e)
+  }
+  
+  serveJx {
+    case Get(List("api", "expense", Expense(expense,_)), _) => Full(expense)
+  }
+
+  // Just an example of autoconversion
+  serveJx {
+    case Get(List("api", "greet", name),_) => 
+      auto(Map("greeting" ->
+               Map("who" -> name,
+                   "what" -> ("Hello at " + new java.util.Date))))
+  }
+    
+}
 
 // Close package statements
 }}

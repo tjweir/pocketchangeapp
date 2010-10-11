@@ -65,7 +65,7 @@ class Boot {
 
     // Tie in the REST API. Uncomment the one you want to use
     LiftRules.dispatch.prepend(DispatchRestAPI.dispatch)
-    // LiftRules.dispatch.prepend(HelperRestAPI)
+    //LiftRules.dispatch.prepend(RestHelperAPI)
 
     // Set up some rewrites
     LiftRules.statelessRewrite.append {

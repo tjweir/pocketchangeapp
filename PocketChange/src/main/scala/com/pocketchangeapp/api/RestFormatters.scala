@@ -9,12 +9,12 @@ package api {
 
 import java.text.SimpleDateFormat
 
-import scala.xml.{Elem, NodeSeq, Text}
+import scala.xml.{Node, NodeSeq, Text}
 
 import net.liftweb.common.{Box,Empty,Failure,Full}
 import net.liftweb.mapper.{By,MaxRows}
 import net.liftweb.json.JsonAST.{JObject,JValue}
-import net.liftweb.http.js.JsExp
+import net.liftweb.json.Xml
 
 import model._
 
@@ -38,18 +38,7 @@ object RestFormatters {
   /**
    * Generates the XML REST representation of an Expense
    */
-  def toXML (e : Expense) : Elem = 
-    <expense>
-      <id>{restId(e)}</id>
-      <accountname>{e.accountName}</accountname>
-      <accountid>{e.account.obj.open_!.id.is}</accountid>
-      <date>{restTimestamp(e)}</date>
-      <description>{e.description.is}</description>
-      <amount>{e.amount.is.toString}</amount>
-      <tags>
-        {e.tags.flatMap {t => <tag>{t.name.is}</tag>}}
-      </tags>
-    </expense>
+  def toXML (e : Expense) : Node = Xml.toXml(toJSON(e)).first
 
   /**
    * Generates the JSON REST representation of an Expense
@@ -59,32 +48,21 @@ object RestFormatters {
     import net.liftweb.json.JsonDSL._
     import net.liftweb.json.JsonAST._
 
-    ("id" -> restId(e)) ~
-    ("date" -> restTimestamp(e)) ~
-    ("description" -> e.description.is) ~
-    ("accountname" -> e.accountName) ~
-    ("accountid" -> e.account.obj.open_!.id.is) ~
-    ("amount" -> e.amount.is.toString) ~
-    ("tags" -> e.tags.map(_.name.is))
-  }
-
-  /**
-   * Wraps the JSON JValue representation of an Expense
-   * in a JsRaw element.
-   */
-  def toJSONExp (e : Expense) : JsExp = {
-    import net.liftweb.http.js.JE.JsRaw
-    import net.liftweb.json.JsonDSL._
-    import net.liftweb.json.JsonAST._
-    
-    JsRaw(compact(render(toJSON(e))))
+    ("expense" -> 
+     ("id" -> restId(e)) ~
+     ("date" -> restTimestamp(e)) ~
+     ("description" -> e.description.is) ~
+     ("accountname" -> e.accountName) ~
+     ("accountid" -> e.account.obj.open_!.id.is) ~
+     ("amount" -> e.amount.is.toString) ~
+     ("tags" -> e.tags.map(_.name.is).mkString(",")))
   }
 
   /*
    * Generates an Atom 1.0 feed from the last 10 Expenses for the given
    * account.
    */
-  def toAtom (a : Account) : Elem = {
+  def toAtom (a : Account) : Node = {
     val entries = Expense.getByAcct(a,Empty,Empty,Empty,MaxRows(10))
     
     <feed xmlns="http://www.w3.org/2005/Atom">
@@ -99,7 +77,7 @@ object RestFormatters {
   /*
    * Generates the XML Atom representation of an Expense
    */
-  def toAtom (e : Expense) : Elem = 
+  def toAtom (e : Expense) : Node = 
     <entry>
       <id>urn:uuid:{restId(e)}</id>
       <title>{e.description.is}</title>
@@ -125,7 +103,7 @@ object RestFormatters {
    * only rudimentary validation of the parsed Expense and tries to be
    * lenient on input.
    */
-  def fromMap (data : scala.collection.Map[String,String], tags: List[String], account : Account) : Box[Expense] = {
+  def fromMap (data : scala.collection.Map[String,String], account : Account) : Box[Expense] = {
     val expense = Expense.create
 
     try {
@@ -141,7 +119,9 @@ object RestFormatters {
       
       if (missing.isEmpty) {
         expense.account(account)
-        expense.tags(tags.map(Tag.byName(account.id.is,_)))
+        data.get("tags").foreach {
+          tags => expense.tags(tags.split(",").map(Tag.byName(account.id.is,_)).toList)
+        }
         Full(expense)
       } else {
         Failure(missing.mkString("Invalid expense. Missing: ", ",", ""))
@@ -165,15 +145,7 @@ object RestFormatters {
       val contents = new String(rawBytes, "UTF-8")
       JSON.parseFull(contents) match {
         case Some(data : Map[String,Any]) => {
-          val tags : List[String] = data.get("tags") match {
-            case Some(l : List[String]) => l
-            case _ => Nil
-          }
-          
-          val otherData = 
-            data.filterKeys(_ != "tags").mapElements(_.toString)
-
-          fromMap(otherData, tags, account)
+          fromMap(data.mapElements(_.toString), account)
         }
         case other => Failure("Invalid JSON submitted: \"%s\"".format(contents))
       }
@@ -184,10 +156,9 @@ object RestFormatters {
   /**
    * Parses an Expense from XML input.
    */
-  def fromXML (rootNode : Box[Elem], account : Account) : Box[Expense] = rootNode match {
+  def fromXML (rootNode : Box[Node], account : Account) : Box[Expense] = rootNode match {
     case Full(<expense>{parameters @ _*}</expense>) => {
       var data = Map[String,String]()
-      var tags = List[String]()
 
       for(parameter <- parameters) { 
         parameter match {
@@ -195,19 +166,12 @@ object RestFormatters {
           case <description>{description}</description> => 
             data += "description" -> description.text
           case <amount>{amount}</amount> => data += "amount" -> amount.text
-          case <tags>{ tagElems @ _* }</tags> => {
-            for (tag <- tagElems) {
-              tag match {
-                case <tag>{tagName}</tag> => tags ::= tagName.text
-                case other => // Ignore (could be whitespace)
-              }
-            }
-          }
+          case <tags>{ tags }</tags> => data += "tags" -> tags.text
           case _ => // Ignore (could be whitespace)
         }
       }
       
-      fromMap(data, tags, account)
+      fromMap(data, account)
     }
     case other => Failure("Missing root expense element")
   }
