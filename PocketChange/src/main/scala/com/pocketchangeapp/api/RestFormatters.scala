@@ -14,7 +14,6 @@ import scala.xml.{Node, NodeSeq, Text}
 import net.liftweb.common.{Box,Empty,Failure,Full}
 import net.liftweb.mapper.{By,MaxRows}
 import net.liftweb.json.JsonAST.{JObject,JValue}
-import net.liftweb.json.Xml
 
 import model._
 
@@ -35,6 +34,7 @@ object RestFormatters {
   def restTimestamp (e : Expense) : String = 
     timestamp.format(e.dateOf.is)
 
+  import net.liftweb.json.Xml
   /**
    * Generates the XML REST representation of an Expense
    */
@@ -42,7 +42,6 @@ object RestFormatters {
 
   /**
    * Generates the JSON REST representation of an Expense
-   * as a JSON JValue
    */
   def toJSON (e : Expense) : JValue = {
     import net.liftweb.json.JsonDSL._

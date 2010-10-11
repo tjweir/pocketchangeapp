@@ -134,6 +134,20 @@ object RestHelperAPI extends RestHelper {
     case Get(List("api", "account", Account(account)), _) =>
       () => Full(AtomResponse(toAtom(account)))
   }
+
+  // Hook our PUT handlers
+  import DispatchRestAPI.addExpense
+  serve {
+    case XmlPut(List("api", "account", Account(account)), (body, request)) =>
+      () => Full(addExpense(fromXML(Full(body),account),
+                            account, 
+                            result => CreatedResponse(toXML(result), "text/xml")))
+    case JsonPut(List("api", "account", Account(account)), (_, request))  =>
+      () => Full(addExpense(fromJSON(request.body,account),
+                            account,
+                            result => JsonResponse(toJSON(result), Nil, Nil, 201)))
+  }
+
  
   // Define an implicit conversion from an Expense to XML or JSON
   import net.liftweb.http.rest.{JsonSelect,XmlSelect}

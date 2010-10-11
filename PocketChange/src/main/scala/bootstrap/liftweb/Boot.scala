@@ -64,8 +64,8 @@ class Boot {
     LiftRules.setSiteMap(SiteMap(MenuInfo.menu :_*))
 
     // Tie in the REST API. Uncomment the one you want to use
-    LiftRules.dispatch.prepend(DispatchRestAPI.dispatch)
-    //LiftRules.dispatch.prepend(RestHelperAPI)
+    //LiftRules.dispatch.prepend(DispatchRestAPI.dispatch)
+    LiftRules.dispatch.prepend(RestHelperAPI)
 
     // Set up some rewrites
     LiftRules.statelessRewrite.append {
