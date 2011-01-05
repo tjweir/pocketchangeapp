@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.pocketchangeapp</groupId>
   <artifactId>PocketChange</artifactId>
-  <version>0.2</version>
+  <version>0.3</version>
   <packaging>war</packaging>
   <name>PocketChangeApp</name>
   <inceptionYear>2008</inceptionYear>
@@ -11,8 +11,8 @@
   <description>A Lift Application to support the Lift Book.</description>
   -->
   <properties>
-    <scala.version>2.7.7</scala.version>
-    <lift.version>2.0</lift.version>
+    <scala.version>2.8.1</scala.version>
+    <lift.version>2.2-RC6</lift.version>
   </properties>
 
   <pluginRepositories>
@@ -57,12 +57,12 @@
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-webkit</artifactId>
+      <artifactId>lift-webkit_${scala.version}</artifactId>
      <version>${lift.version}</version>
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-mapper</artifactId>
+      <artifactId>lift-mapper_${scala.version}</artifactId>
       <version>${lift.version}</version>
     </dependency> 
     <dependency>
@@ -113,6 +113,11 @@
       <version>${scala.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>0.9.26</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -135,7 +140,6 @@
 	  <args>
             <!-- arg>-unchecked</arg -->
             <arg>-deprecation</arg>
-            <arg>-Xno-varargs-conversion</arg>
           </args>
         </configuration>
       </plugin>

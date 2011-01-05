@@ -192,7 +192,7 @@ object ExpenseTag extends ExpenseTag with LongKeyedMetaMapper[ExpenseTag] {
   def findTagExpenses (search : String) : List[Expense] = 
     findAll(In(ExpenseTag.tag,
 	       Tag.id,
-	       Like(Tag.name, search))).map(_.expense.obj.open_!).removeDuplicates
+	       Like(Tag.name, search))).map(_.expense.obj.open_!).distinct
 }
 
 // Close package statements 

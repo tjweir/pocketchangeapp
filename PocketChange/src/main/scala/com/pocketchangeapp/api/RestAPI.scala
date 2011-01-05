@@ -22,6 +22,10 @@ import net.liftweb.mapper.By
 
 import model._
 
+/**
+ * This object provides a REST API for Pocketchange utilizing the
+ * older-style XMLApiHelper. For the newer style, see RestHelperAPI.
+ */
 object DispatchRestAPI extends XMLApiHelper {
   final val logger = Logger("com.pocketchangeapp.api.DispatchRestAPI")
 
@@ -35,9 +39,9 @@ object DispatchRestAPI extends XMLApiHelper {
   def dispatch: LiftRules.DispatchPF = {     
     // Define our getters first
     case Req(List("api", "expense", Expense(expense,_)), _, GetRequest) => 
-      () => nodeSeqToResponse(toXML(expense)) // default to XML
+      () => Full(toXML(expense)) // default to XML
     case Req(List("api", "expense", Expense(expense,_), "xml"), _, GetRequest) => 
-      () => nodeSeqToResponse(toXML(expense))
+      () => Full(toXML(expense))
     case Req(List("api", "expense", Expense(expense,_), "json"), _, GetRequest) => 
       () => JsonResponse(toJSON(expense))
     case Req(List("api", "account", Account(account)), _, GetRequest) =>
@@ -80,7 +84,7 @@ object DispatchRestAPI extends XMLApiHelper {
   // We're overriding this because we don't want the operation and success tags
   override def buildResponse (success: Boolean, 
                               msg : Box[NodeSeq],
-                              body : NodeSeq) = XmlResponse(body.first)
+                              body : NodeSeq) = XmlResponse(body.head)
 
   def createTag(in : NodeSeq) : Elem = <unused/>
 

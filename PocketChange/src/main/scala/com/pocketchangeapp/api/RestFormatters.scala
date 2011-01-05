@@ -38,7 +38,7 @@ object RestFormatters {
   /**
    * Generates the XML REST representation of an Expense
    */
-  def toXML (e : Expense) : Node = Xml.toXml(toJSON(e)).first
+  def toXML (e : Expense) : Node = Xml.toXml(toJSON(e)).head
 
   /**
    * Generates the JSON REST representation of an Expense
@@ -144,7 +144,7 @@ object RestFormatters {
       val contents = new String(rawBytes, "UTF-8")
       JSON.parseFull(contents) match {
         case Some(data : Map[String,Any]) => {
-          fromMap(data.mapElements(_.toString), account)
+          fromMap(data.mapValues(_.toString), account)
         }
         case other => Failure("Invalid JSON submitted: \"%s\"".format(contents))
       }
