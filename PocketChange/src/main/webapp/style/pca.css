@@ -24,7 +24,11 @@ color: white;
   margin-bottom: 15px;
   height: 80px;
   text-size: 160%;
+}
 
+#entryform th {
+    color: white;
+    background: #60a8c0;
 }
 
 #formBox { 
