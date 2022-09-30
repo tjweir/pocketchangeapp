@@ -11,7 +11,7 @@
   <description>A Lift Application to support the Lift Book.</description>
   -->
   <properties>
-    <scala.version>2.13.1</scala.version>
+    <scala.version>2.13.9</scala.version>
     <lift.version>2.2</lift.version>
   </properties>
 
